@@ -23,7 +23,7 @@
 int
 image_export_ycc444_8_planar(image *i, FILE *f)
 {
-	char *row;
+	uint8_t *row;
 	int d;
 	size_t n, c, y, x, nbytes;
 	

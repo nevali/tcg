@@ -9,7 +9,8 @@ OBJ = image.o main.o colourmap.o draw.o \
 	ebu100.o \
 	ycc444_16_planar.o \
 	ycc444_8_planar.o \
-	tiff_ycc444_16.o
+	tiff_ycc444_16.o \
+	tiff_ycc444_8.o
 
 
 ####

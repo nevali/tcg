@@ -49,5 +49,6 @@ main(int argc, char **argv)
 	fclose(f);
 
 	image_export_tiff_ycc444_16(i, "test.ycc444-16.tiff");
+	image_export_tiff_ycc444_8(i, "test.ycc444-8.tiff");
 	return 0;
 }
