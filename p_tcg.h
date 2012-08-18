@@ -100,24 +100,10 @@ struct generator_s
 	const char *description;
 };
 
-extern colour sub_black;
-extern colour super_white;
-extern colour black;
-extern colour white;
-
-extern colour red100;
-extern colour green100;
-extern colour blue100;
-extern colour yellow100;
-extern colour cyan100;
-extern colour magenta100;
-
-extern colour red75;
-extern colour green75;
-extern colour blue75;
-extern colour yellow75;
-extern colour cyan75;
-extern colour magenta75;
+extern colour sub_black, super_white;
+extern colour black, white, grey50, grey20;
+extern colour red100, green100, blue100, cyan100, magenta100, yellow100;
+extern colour red75, green75, blue75, cyan75, magenta75, yellow75;
 
 int colourmap_init(void);
 

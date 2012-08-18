@@ -20,16 +20,10 @@
 
 #include "p_tcg.h"
 
-colour sub_black;
-colour super_white;
-colour black;
-colour white;
-colour red100;
-colour green100;
-colour blue100;
-colour yellow100;
-colour cyan100;
-colour magenta100;
+colour sub_black, super_white;
+colour black, white, grey50, grey20;
+colour red100, green100, blue100, cyan100, magenta100, yellow100;
+colour red75, green75, blue75, cyan75, magenta75, yellow75;
 
 struct colourmap
 {
@@ -66,12 +60,23 @@ static struct colourmap maptable[] =
 	{ &black,        0x1000, 0x8000, 0x8000 },
 	{ &white,        0xeb00, 0x8000, 0x8000 },
 
+	{ &grey50,       0x7eeb, 0x8000, 0x8000 },
+	{ &grey20,       0x3c32, 0x8000, 0x8000 },
+
 	{ &red100,       0x4082, 0x665a, 0xf000 },
 	{ &green100,     0xacac, 0x29a6, 0x19f2 },
 	{ &blue100,      0x1fca, 0xf000, 0x75b8 },
 	{ &cyan100,      0xbc76, 0x99a6, 0x1000 },
 	{ &magenta100,   0x504c, 0xd65a, 0xe613 },
 	{ &yellow100,    0xdd2e, 0x1000, 0x8a4e },
+
+	{ &red75,        0x3486, 0x6cb0, 0xd499 },
+	{ &green75,      0x85f7, 0x3efc, 0x3329 },
+	{ &blue75,       0x1be4, 0xd454, 0x7842 },
+	{ &cyan75,       0x91da, 0x9350, 0x2b6b },
+	{ &magenta75,    0x406a, 0xc104, 0xccdb },
+	{ &yellow75,     0xaa7d, 0x2bac, 0x87c2 },
+
 	{ NULL,          0,      0,      0      }
 };
 
