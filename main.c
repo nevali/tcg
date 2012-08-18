@@ -38,6 +38,8 @@ static format formats[] = {
 
 static generator generators[] = {
 	{ "ebu100", generate_ebu100, "EBU 100% colour bars" },
+	{ "ebu75", generate_ebu75, "EBU 75% colour bars" },
+	{ "ebu3325-1", generate_ebu3325_1, "EBU Tech 3325: Test pattern 1" },
 	{ NULL, NULL, NULL }
 };
 
@@ -179,7 +181,7 @@ main(int argc, char **argv)
 	{
 		if(!strcmp(generators[c].name, pattern))
 		{
-			if(generate_ebu100(i, 0))
+			if(generators[c].fn(i, 0))
 			{
 				fprintf(stderr, "%s: %s\n", progname, strerror(errno));
 				return -1;

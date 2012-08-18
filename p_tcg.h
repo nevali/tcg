@@ -125,5 +125,7 @@ int image_export_tiff_y16(image *i, const char *pathname);
 # endif
 
 int generate_ebu100(image *i, uint32_t frame);
+int generate_ebu75(image *i, uint32_t frame);
+int generate_ebu3325_1(image *i, uint32_t frame);
 
 #endif /*!P_TCG_H_*/
