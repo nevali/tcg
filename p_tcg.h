@@ -104,6 +104,7 @@ extern colour sub_black, super_white;
 extern colour black, white, grey50, grey20;
 extern colour red100, green100, blue100, cyan100, magenta100, yellow100;
 extern colour red75, green75, blue75, cyan75, magenta75, yellow75;
+extern colour ebu_red, ebu_green, ebu_blue;
 
 int colourmap_init(void);
 
@@ -127,5 +128,11 @@ int image_export_tiff_y16(image *i, const char *pathname);
 int generate_ebu100(image *i, uint32_t frame);
 int generate_ebu75(image *i, uint32_t frame);
 int generate_ebu3325_1(image *i, uint32_t frame);
+int generate_ebu3325_2(image *i, uint32_t frame);
+
+int generate_ebu3325_5(image *i, uint32_t frame);
+int generate_ebu3325_5_red(image *i, uint32_t frame);
+int generate_ebu3325_5_green(image *i, uint32_t frame);
+int generate_ebu3325_5_blue(image *i, uint32_t frame);
 
 #endif /*!P_TCG_H_*/

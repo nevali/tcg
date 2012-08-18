@@ -40,6 +40,10 @@ static generator generators[] = {
 	{ "ebu100", generate_ebu100, "EBU 100% colour bars" },
 	{ "ebu75", generate_ebu75, "EBU 75% colour bars" },
 	{ "ebu3325-1", generate_ebu3325_1, "EBU Tech 3325: Test pattern 1" },
+	{ "ebu3325-2", generate_ebu3325_2, "EBU Tech 3325: Test pattern 2" },
+	{ "ebu3325-5r", generate_ebu3325_5_red, "EBU Tech 3325: Test pattern 5-red" },
+	{ "ebu3325-5g", generate_ebu3325_5_green, "EBU Tech 3325: Test pattern 5-green" },
+	{ "ebu3325-5b", generate_ebu3325_5_blue, "EBU Tech 3325: Test pattern 5-blue" },
 	{ NULL, NULL, NULL }
 };
 
@@ -53,6 +57,7 @@ usage(void)
 	printf("   -h                 Print this usage message\n");
 	printf("   -s [WIDTHx]HEIGHT  Specify frame size\n");
 	printf("   -t TYPE            Generate a TYPE pattern\n");
+	printf("   -f INDEX           Specify frame index (for multi-frame patterns)\n");
 	printf("\n");
 	printf("FORMAT is one of:\n\n");
 	printf("%-16s %-40s %6s %6s %6s\n", "NAME", "DESCRIPTION", "PLANES", "DEPTH", "PLANAR");
@@ -111,6 +116,7 @@ int
 main(int argc, char **argv)
 {
 	size_t c;
+	unsigned long frame;
 	image *i;
 	FILE *f;
 	int e, ch, width, height;
@@ -120,7 +126,7 @@ main(int argc, char **argv)
 	width = 1920;
 	height = 1080;
 	pattern = NULL;
-	while((ch = getopt(argc, argv, "hs:t:")) != -1)
+	while((ch = getopt(argc, argv, "hs:t:f:")) != -1)
 	{
 		switch(ch)
 		{
@@ -133,11 +139,20 @@ main(int argc, char **argv)
 				return 1;
 			}
 			break;
+		case 'f':
+			t = NULL;
+			frame = strtoul(optarg, &t, 10);
+			if(t && *t)
+			{
+				fprintf(stderr, "%s: invalid frame number '%s'\n", progname, optarg);
+				return 1;
+			}
+			break;
 		case 't':
 			if(pattern)
 			{
 				fprintf(stderr, "%s: pattern type may only be specified once\n", progname);
-				exit(1);
+				return 1;
 			}
 			for(c = 0; generators[c].name; c++)
 			{
@@ -181,7 +196,7 @@ main(int argc, char **argv)
 	{
 		if(!strcmp(generators[c].name, pattern))
 		{
-			if(generators[c].fn(i, 0))
+			if(generators[c].fn(i, (uint32_t) frame))
 			{
 				fprintf(stderr, "%s: %s\n", progname, strerror(errno));
 				return -1;

@@ -24,6 +24,7 @@ colour sub_black, super_white;
 colour black, white, grey50, grey20;
 colour red100, green100, blue100, cyan100, magenta100, yellow100;
 colour red75, green75, blue75, cyan75, magenta75, yellow75;
+colour ebu_red, ebu_green, ebu_blue;
 
 struct colourmap
 {
@@ -77,6 +78,11 @@ static struct colourmap maptable[] =
 	{ &magenta75,    0x406a, 0xc104, 0xccdb },
 	{ &yellow75,     0xaa7d, 0x2bac, 0x87c2 },
 
+	/* From EBU Tech 3325, shifted left 6 bits */
+	{ &ebu_red,      0x3e80, 0x6640, 0xf000 },
+	{ &ebu_green,    0xacc0, 0x29c0, 0x1a40 },
+	{ &ebu_blue,     0x1fc0, 0xf000, 0x75c0 },
+	
 	{ NULL,          0,      0,      0      }
 };
 
