@@ -36,7 +36,7 @@ image_export_tiff_y16(image *i, const char *pathname)
 	TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, sizeof(pixel) * 8);
 	TIFFSetField(tif, TIFFTAG_EXTRASAMPLES, 0, NULL);
 	TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
-	TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+	TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
 	TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, 1);
 
 	n = 0;
