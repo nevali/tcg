@@ -1,3 +1,5 @@
+EXTRA_DIST = README
+
 bin_PROGRAMS = tcg
 
 tcg_SOURCES = main.c image.c draw.c \

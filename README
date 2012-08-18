@@ -1,0 +1,19 @@
+This is 'tcg', a test-card (or test pattern) generator.
+
+The intention is for tcg to be able to generate a variety of colour-accurate
+test patterns at any practical resolution, at up to 16 bits per channel,
+and stored in any of a number of formats.
+
+To-do/Outstanding issues:
+
+* Currently, tcg only generates the EBU "100% intensity colour bars" pattern.
+
+* The actual Y/Cb/Cr values in colourmap.c are in need of review.
+
+* YCbCr TIFF output does not properly set the colourmetry metadata.
+
+* There is no 10-bpc output option.
+
+* TIFF output is currently uncompressed.
+
+* JPEG2000 should be added as an interchange format.
