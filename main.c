@@ -20,17 +20,74 @@
 
 #include "p_tcg.h"
 
+#define DEFAULT_FORMAT                  "ycc444p16be"
+
+static const char *progname;
+
+static format formats[] = {
+	{ "ycc444p16be", image_export_ycc444_16_planar, "Raw 4:4:4 YCbCr 16-bpc big-endian", 3, 16, 1 },
+	{ "ycc444p8", image_export_ycc444_8_planar, "Raw 4:4:4 YCbCr 8-bpc", 3, 8, 1 },
+#ifdef WITH_LIBTIFF
+	{ "tiff-ycc444p16", image_export_tiff_ycc444_16, "4:4:4 YCbCr 16-bpc TIFF", 3, 16, 1 },
+	{ "tiff-ycc444p8", image_export_tiff_ycc444_8, "4:4:4 YCbCr 8-bpc TIFF", 3, 8, 1 },
+#endif
+	{ NULL, NULL, 0, 0, 0 }
+};
+
+static void
+usage(void)
+{
+	size_t c;
+
+	printf("Usage: %s [OPTIONS] [FORMAT:]OUTFILE [[FORMAT:]OUTFILE] ...\n\n", progname);
+	printf("OPTIONS is one or more of:\n");
+	printf("   -h                 Print this usage message\n");
+	printf("   -s [WIDTHx]HEIGHT  Specify frame size\n");
+	printf("\n");
+	printf("FORMAT is one of:\n\n");
+	printf("%-16s %-40s %6s %6s %6s\n", "NAME", "DESCRIPTION", "PLANES", "DEPTH", "PLANAR");
+	for(c = 0; formats[c].name; c++)
+	{
+		printf("%-16s %-40s %6d %6d    %c\n", formats[c].name,
+			   formats[c].description, formats[c].planes, formats[c].depth,
+			   formats[c].planar ? 'Y' : 'N');
+	}
+}
+
 int
 main(int argc, char **argv)
 {
+	size_t c;
 	image *i;
 	FILE *f;
+	int e, ch, width, height;
+	char *t, *format;
 
-	(void) argc;
-	(void) argv;
-
+	progname = argv[0];
+	width = 1920;
+	height = 1080;
+	while((ch = getopt(argc, argv, "hs:t:")) != -1)
+	{
+		switch(ch)
+		{
+		case 'h':
+			usage();
+			return 0;
+		case 's':
+			fprintf(stderr, "[size=%s]\n", optarg);
+			break;
+		case '?':
+			usage();
+			return 1;
+		}
+	}
+	if(optind == argc)
+	{
+		usage();
+		return 1;
+	}
 	colourmap_init();
-	i = image_create(PF_YCBCR, 1920, 1080);
+	i = image_create(PF_YCBCR, width, height);
 	if(!i)
 	{
 		fprintf(stderr, "%s: failed to allocate image\n", argv[0]);
@@ -40,18 +97,39 @@ main(int argc, char **argv)
 
 	testcard_ebu100(i);
 
-	f = fopen("test.yuv16", "wb");
-	image_export_ycc444_16_planar(i, f);
-	fclose(f);
+	e = 0;
+	for(; optind < argc; optind++)
+	{
+		t = strchr(argv[optind], ':');
+		if(t)
+		{
+			format = argv[optind];
+			*t = 0;
+			t++;
+		}
+		else
+		{
+			format = DEFAULT_FORMAT;
+			t = argv[optind];
+		}
+		for(c = 0; formats[c].name; c++)
+		{
+			if(!strcmp(formats[c].name, format))
+			{
+				if(formats[c].fn(i, t))
+				{
+					fprintf(stderr, "%s: %s: %s\n", progname, t, strerror(errno));
+					e = 1;
+				}
+				break;
+			}			
+		}
+		if(!formats[c].name)
+		{
+			fprintf(stderr, "%s: unsupported format '%s'\n", progname, format);
+			e = 1;
+		}
+	}
 
-	f = fopen("test.yuv8", "wb");
-	image_export_ycc444_8_planar(i, f);
-	fclose(f);
-
-#ifdef WITH_LIBTIFF
-	image_export_tiff_ycc444_16(i, "test.ycc444-16.tiff");
-	image_export_tiff_ycc444_8(i, "test.ycc444-8.tiff");
-#endif
-
-	return 0;
+	return e;
 }

@@ -20,6 +20,7 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <stdint.h>
+# include <unistd.h>
 # include <errno.h>
 # include <string.h>
 # include <math.h>
@@ -38,6 +39,8 @@ typedef uint16_t pixel;
 typedef struct pixelref_s pixelref;
 typedef struct colour_s colour;
 typedef struct image_s image;
+typedef struct format_s format;
+typedef int (*image_export_fn)(image *img, const char *fn);
 
 struct ycbcr_s
 {
@@ -78,6 +81,16 @@ struct image_s
 	pixel *pixels[MAX_PLANES];
 };
 
+struct format_s
+{
+	const char *name;
+	image_export_fn fn;
+	const char *description;
+	int planes;
+	int depth;
+	int planar;
+};
+
 extern colour sub_black;
 extern colour super_white;
 extern colour black;
@@ -107,8 +120,8 @@ int image_draw_hline(image *i, uint32_t x, uint32_t y, uint32_t w, colour *c);
 int image_draw_fillrect(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, colour *c);
 int image_draw_bars(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, colour **bars, size_t nbars);
 
-int image_export_ycc444_16_planar(image *i, FILE *f);
-int image_export_ycc444_8_planar(image *i, FILE *f);
+int image_export_ycc444_16_planar(image *i, const char *pathname);
+int image_export_ycc444_8_planar(image *i, const char *pathname);
 
 # ifdef WITH_LIBTIFF
 int image_export_tiff_ycc444_16(image *i, const char *pathname);

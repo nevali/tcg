@@ -21,16 +21,23 @@
 #include "p_tcg.h"
 
 int
-image_export_ycc444_8_planar(image *i, FILE *f)
+image_export_ycc444_8_planar(image *i, const char *pathname)
 {
 	uint8_t *row;
 	int d;
 	size_t n, c, y, x, nbytes;
-	
+	FILE *f;
+
 	nbytes = i->width;
 	row = malloc(nbytes);
 	if(!row)
 	{
+		return -1;
+	}
+	f = fopen(pathname, "w");
+	if(!f)
+	{
+		free(row);
 		return -1;
 	}
 	for(d = 0; d < i->planes; d++)
@@ -49,5 +56,6 @@ image_export_ycc444_8_planar(image *i, FILE *f)
 		}
 	}
 	free(row);
+	fclose(f);
 	return 0;
 }
