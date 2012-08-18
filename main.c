@@ -21,6 +21,7 @@
 #include "p_tcg.h"
 
 #define DEFAULT_FORMAT                  "ycc444p16be"
+#define DEFAULT_GENERATOR               "ebu100"
 
 static const char *progname;
 
@@ -35,6 +36,11 @@ static format formats[] = {
 	{ NULL, NULL, 0, 0, 0 }
 };
 
+static generator generators[] = {
+	{ "ebu100", generate_ebu100, "EBU 100% colour bars" },
+	{ NULL, NULL, NULL }
+};
+
 static void
 usage(void)
 {
@@ -44,6 +50,7 @@ usage(void)
 	printf("OPTIONS is one or more of:\n");
 	printf("   -h                 Print this usage message\n");
 	printf("   -s [WIDTHx]HEIGHT  Specify frame size\n");
+	printf("   -t TYPE            Generate a TYPE pattern\n");
 	printf("\n");
 	printf("FORMAT is one of:\n\n");
 	printf("%-16s %-40s %6s %6s %6s\n", "NAME", "DESCRIPTION", "PLANES", "DEPTH", "PLANAR");
@@ -53,6 +60,16 @@ usage(void)
 			   formats[c].description, formats[c].planes, formats[c].depth,
 			   formats[c].planar ? 'Y' : 'N');
 	}
+	printf("\n");
+	printf("TYPE is one of:\n\n");
+	printf("%-16s %-40s\n", "NAME", "DESCRIPTION");
+	for(c = 0; generators[c].name; c++)
+	{
+		printf("%-16s %-40s\n", generators[c].name, generators[c].description);
+	}
+	printf("\n");
+	printf("The default format is '%s', and the default pattern type is '%s'.\n",
+		   DEFAULT_FORMAT, DEFAULT_GENERATOR);
 }
 
 int
@@ -95,11 +112,12 @@ main(int argc, char **argv)
 	image *i;
 	FILE *f;
 	int e, ch, width, height;
-	char *t, *format;
+	char *t, *format, *pattern;
 
 	progname = argv[0];
 	width = 1920;
 	height = 1080;
+	pattern = NULL;
 	while((ch = getopt(argc, argv, "hs:t:")) != -1)
 	{
 		switch(ch)
@@ -113,10 +131,35 @@ main(int argc, char **argv)
 				return 1;
 			}
 			break;
+		case 't':
+			if(pattern)
+			{
+				fprintf(stderr, "%s: pattern type may only be specified once\n", progname);
+				exit(1);
+			}
+			for(c = 0; generators[c].name; c++)
+			{
+				if(!strcmp(generators[c].name, optarg))
+				{
+					pattern = optarg;
+					break;
+				}
+			}
+			if(!generators[c].name)
+			{
+				fprintf(stderr, "%s: unsupported pattern type '%s'\n", progname, optarg);
+				fprintf(stderr, "See '%s -h' for a list of supported pattern types\n", progname);
+				return 1;
+			}
+			break;
 		case '?':
-			usage();
+			fprintf(stderr, "See '%s -h' for usage information\n", progname);
 			return 1;
 		}
+	}
+	if(!pattern)
+	{
+		pattern = DEFAULT_GENERATOR;
 	}
 	if(optind == argc)
 	{
@@ -132,7 +175,18 @@ main(int argc, char **argv)
 	}
 	image_clear(i, &black);
 
-	testcard_ebu100(i);
+	for(c = 0; generators[c].name; c++)
+	{
+		if(!strcmp(generators[c].name, pattern))
+		{
+			if(generate_ebu100(i, 0))
+			{
+				fprintf(stderr, "%s: %s\n", progname, strerror(errno));
+				return -1;
+			}
+			break;
+		}
+	}
 
 	e = 0;
 	for(; optind < argc; optind++)
@@ -156,7 +210,7 @@ main(int argc, char **argv)
 				if(formats[c].fn(i, t))
 				{
 					fprintf(stderr, "%s: %s: %s\n", progname, t, strerror(errno));
-					e = 1;
+					e |= 1;
 				}
 				break;
 			}			
@@ -164,9 +218,12 @@ main(int argc, char **argv)
 		if(!formats[c].name)
 		{
 			fprintf(stderr, "%s: unsupported format '%s'\n", progname, format);
-			e = 1;
+			e |= 2;
 		}
 	}
-
-	return e;
+	if((e & 2))
+	{
+		fprintf(stderr, "See '%s -h' for a list of supported formats\n", progname);
+	}	
+	return e ? 1 : 0;
 }

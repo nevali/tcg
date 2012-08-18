@@ -40,7 +40,9 @@ typedef struct pixelref_s pixelref;
 typedef struct colour_s colour;
 typedef struct image_s image;
 typedef struct format_s format;
+typedef struct generator_s generator;
 typedef int (*image_export_fn)(image *img, const char *fn);
+typedef int (*generator_fn)(image *img, uint32_t frame);
 
 struct ycbcr_s
 {
@@ -91,6 +93,13 @@ struct format_s
 	int planar;
 };
 
+struct generator_s
+{
+	const char *name;
+	generator_fn fn;
+	const char *description;
+};
+
 extern colour sub_black;
 extern colour super_white;
 extern colour black;
@@ -129,6 +138,6 @@ int image_export_tiff_ycc444_8(image *i, const char *pathname);
 int image_export_tiff_y16(image *i, const char *pathname);
 # endif
 
-int testcard_ebu100(image *i);
+int generate_ebu100(image *i, uint32_t frame);
 
 #endif /*!P_TCG_H_*/
