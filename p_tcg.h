@@ -104,7 +104,14 @@ extern colour sub_black, super_white;
 extern colour black, white, grey50, grey20;
 extern colour red100, green100, blue100, cyan100, magenta100, yellow100;
 extern colour red75, green75, blue75, cyan75, magenta75, yellow75;
+extern colour ebu_grey1, ebu_grey2, ebu_grey3, ebu_grey4, ebu_grey5, ebu_grey6,
+	ebu_grey7, ebu_grey8, ebu_grey9, ebu_grey10, ebu_grey11, ebu_grey12,
+	ebu_grey13, ebu_grey14, ebu_grey15, ebu_grey16, ebu_grey17, ebu_grey18,
+	ebu_grey19;
 extern colour ebu_red, ebu_green, ebu_blue;
+extern colour ebu1, ebu2, ebu3, ebu4, ebu5, ebu6, ebu7, ebu8, ebu9, ebu10,
+	ebu11, ebu12, ebu13, ebu14, ebu15;
+extern colour *ebu_greys[], *ebu_shades[];
 
 int colourmap_init(void);
 

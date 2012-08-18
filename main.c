@@ -41,6 +41,7 @@ static generator generators[] = {
 	{ "ebu75", generate_ebu75, "EBU 75% colour bars" },
 	{ "ebu3325-1", generate_ebu3325_1, "EBU Tech 3325: Test pattern 1" },
 	{ "ebu3325-2", generate_ebu3325_2, "EBU Tech 3325: Test pattern 2" },
+	{ "ebu3325-5", generate_ebu3325_5, "EBU Tech 3325: Test patterns 5-1...5-15" },
 	{ "ebu3325-5r", generate_ebu3325_5_red, "EBU Tech 3325: Test pattern 5-red" },
 	{ "ebu3325-5g", generate_ebu3325_5_green, "EBU Tech 3325: Test pattern 5-green" },
 	{ "ebu3325-5b", generate_ebu3325_5_blue, "EBU Tech 3325: Test pattern 5-blue" },
@@ -198,7 +199,7 @@ main(int argc, char **argv)
 		{
 			if(generators[c].fn(i, (uint32_t) frame))
 			{
-				fprintf(stderr, "%s: %s\n", progname, strerror(errno));
+				fprintf(stderr, "%s: %s: %s\n", progname, pattern, strerror(errno));
 				return -1;
 			}
 			break;

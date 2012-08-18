@@ -87,3 +87,27 @@ generate_ebu3325_5_blue(image *i, uint32_t frame)
 	}
 	return 0;
 }
+
+int
+generate_ebu3325_5(image *i, uint32_t frame)
+{
+	uint32_t size;
+	colour *col;
+
+	/* Determine the colour from the frame index */
+	frame %= 15;
+	col = ebu_shades[frame];
+	/* Patches are squares 13.35% of the height */   
+	size = i->height / 7.5;
+	/* Fill with black */
+	if(image_clear(i, &black))
+	{
+		return -1;
+	}
+	/* Place the centre square */
+	if(image_draw_fillrect(i, (i->width - size) / 2, (i->height - size) / 2, size, size, col))
+	{
+		return -1;
+	}
+	return 0;
+}
