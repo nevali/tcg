@@ -6,8 +6,6 @@ and stored in any of a number of formats.
 
 To-do/Outstanding issues:
 
-* Currently, tcg only generates the EBU "100% intensity colour bars" pattern.
-
 * The actual Y/Cb/Cr values in colourmap.c are in need of review.
 
 * YCbCr TIFF output does not properly set the colourmetry metadata.
