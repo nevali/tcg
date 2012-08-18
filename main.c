@@ -55,6 +55,39 @@ usage(void)
 }
 
 int
+parsesize(char *size, int *width, int *height)
+{
+	char *t;
+
+	t = NULL;
+	*height = strtol(size, &t, 10);
+	if(t && *t)
+	{
+		if(*t == 'x')
+		{
+			t++;
+			*width = *height;
+			*height = strtol(t, &t, 10);
+		}
+		else
+		{
+			fprintf(stderr, "%s: '%s': cannot parse frame size\n", progname, size);
+			return -1;
+		}
+	}
+	else
+	{
+		*width = (*height * 16) / 9;
+	}
+	if(*width < 320 || *height < 180)
+	{
+		fprintf(stderr, "%s: '%s' is smaller than minimum 320x180\n", progname, size);
+		return -1;
+	}
+	return 0;
+}
+
+int
 main(int argc, char **argv)
 {
 	size_t c;
@@ -74,7 +107,10 @@ main(int argc, char **argv)
 			usage();
 			return 0;
 		case 's':
-			fprintf(stderr, "[size=%s]\n", optarg);
+			if(parsesize(optarg, &width, &height))
+			{
+				return 1;
+			}
 			break;
 		case '?':
 			usage();
