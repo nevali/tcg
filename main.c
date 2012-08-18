@@ -45,6 +45,7 @@ static generator generators[] = {
 	{ "ebu3325-5r", generate_ebu3325_5_red, "EBU Tech 3325: Test pattern 5-red" },
 	{ "ebu3325-5g", generate_ebu3325_5_green, "EBU Tech 3325: Test pattern 5-green" },
 	{ "ebu3325-5b", generate_ebu3325_5_blue, "EBU Tech 3325: Test pattern 5-blue" },
+	{ "blacklevel", generate_blacklevel, "Black/sub-black checkerboard" },
 	{ NULL, NULL, NULL }
 };
 
