@@ -20,6 +20,8 @@
 
 #include "p_tcg.h"
 
+#ifdef WITH_LIBTIFF
+
 int
 image_export_tiff_ycc444_16(image *i, const char *pathname)
 {
@@ -60,3 +62,5 @@ image_export_tiff_ycc444_16(image *i, const char *pathname)
 	TIFFClose(tif);
 	return 0;
 }
+
+#endif /*!WITH_LIBTIFF*/

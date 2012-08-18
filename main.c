@@ -48,7 +48,10 @@ main(int argc, char **argv)
 	image_export_ycc444_8_planar(i, f);
 	fclose(f);
 
+#ifdef WITH_LIBTIFF
 	image_export_tiff_ycc444_16(i, "test.ycc444-16.tiff");
 	image_export_tiff_ycc444_8(i, "test.ycc444-8.tiff");
+#endif
+
 	return 0;
 }

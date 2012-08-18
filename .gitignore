@@ -3,3 +3,16 @@
 *.exe
 test.*
 tcg
+aclocal.m4
+*.in
+.deps
+.libs
+Makefile
+/configure
+/autom4te.cache
+/depcomp
+/config.status
+/config.cache
+/config.log
+/install-sh
+/missing

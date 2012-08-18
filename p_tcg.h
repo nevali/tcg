@@ -109,8 +109,11 @@ int image_draw_bars(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, co
 
 int image_export_ycc444_16_planar(image *i, FILE *f);
 int image_export_ycc444_8_planar(image *i, FILE *f);
+
+# ifdef WITH_LIBTIFF
 int image_export_tiff_ycc444_16(image *i, const char *pathname);
 int image_export_tiff_ycc444_8(image *i, const char *pathname);
+# endif
 
 int testcard_ebu100(image *i);
 
