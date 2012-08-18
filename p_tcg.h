@@ -126,6 +126,7 @@ int image_export_ycc444_8_planar(image *i, const char *pathname);
 # ifdef WITH_LIBTIFF
 int image_export_tiff_ycc444_16(image *i, const char *pathname);
 int image_export_tiff_ycc444_8(image *i, const char *pathname);
+int image_export_tiff_y16(image *i, const char *pathname);
 # endif
 
 int testcard_ebu100(image *i);

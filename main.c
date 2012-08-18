@@ -30,6 +30,7 @@ static format formats[] = {
 #ifdef WITH_LIBTIFF
 	{ "tiff-ycc444p16", image_export_tiff_ycc444_16, "4:4:4 YCbCr 16-bpc TIFF", 3, 16, 1 },
 	{ "tiff-ycc444p8", image_export_tiff_ycc444_8, "4:4:4 YCbCr 8-bpc TIFF", 3, 8, 1 },
+	{ "tiff-y16", image_export_tiff_y16, "Greyscale (luma) 16-bpc TIFF", 3, 8, 1 },
 #endif
 	{ NULL, NULL, 0, 0, 0 }
 };
