@@ -14,8 +14,6 @@ To-do/outstanding issues
 
 * There is no 10-bpc output option.
 
-* JPEG2000 should be added as an interchange format.
-
 
 Using tcg
 =========
@@ -69,19 +67,29 @@ If the filename does not contain any pattern, and multiple frames are
 requested, the result will be output files containing all of the requested
 frames. The precise effects of this are format-dependent. For raw formats,
 all of the frames are simply appended to the file. For TIFF output, each frame
-is written as a subpage in the TIFF.
+is written as a subpage in the TIFF. Single-file multi-frame JPEG2000 images
+are written, but possibly not correctly -- most software seems unable to
+process them (or even indicate the presence of any except the first frame).
 
 
 Building from a git checkout
 ============================
 
-You will need autoconf and automake, as well as the usual toolchain. You
-need libtiff installed (including its -dev or -devel package, if that's how
-you installed it) if you want TIFF output.
+You will need autoconf and automake, as well as the usual toolchain.
+
+You need libtiff installed (including its -dev or -devel package, if that's
+how you installed it) if you want TIFF output.
+
+You need libjpeg and libjasper installed if you want JPEG2000 output.
+Depending upon how libjasper has been built and installed, you may need to
+explicitly provide the prefix to libjpeg.
 
 $ git submodule update --init --recursive
 $ ./buildtools/autogen
-$ ./configure [--with-libtiff=/prefix/of/libtiff]
+$ ./configure
+      [--with-libtiff=/prefix/of/libtiff]
+      [--with-libjpeg=/prefix/of/libjpeg]
+      [--with-libjasper=/prefix/of/libjasper]
 $ make
 
 See the source of buildtools/autogen for environment variables you can set if
