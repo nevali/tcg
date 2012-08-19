@@ -143,5 +143,6 @@ int generate_ebu3325_5_green(image *i, uint32_t frame);
 int generate_ebu3325_5_blue(image *i, uint32_t frame);
 
 int generate_blacklevel(image *i, uint32_t frame);
+int generate_whitelevel(image *i, uint32_t frame);
 
 #endif /*!P_TCG_H_*/
