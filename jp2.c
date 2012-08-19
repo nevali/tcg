@@ -73,9 +73,9 @@ export_jp2(image *i, output *output)
 	{
 	case PF_YCBCR:
 		jas_image_setclrspc(jp2_image,JAS_CLRSPC_SYCBCR);
-		jas_image_setcmpttype(jp2_image, 0, (jas_image_cmpttype_t) JAS_IMAGE_CT_COLOR(0));
-		jas_image_setcmpttype(jp2_image, 1, (jas_image_cmpttype_t) JAS_IMAGE_CT_COLOR(1));
-		jas_image_setcmpttype(jp2_image, 2, (jas_image_cmpttype_t) JAS_IMAGE_CT_COLOR(2));
+		jas_image_setcmpttype(jp2_image, 0, JAS_IMAGE_CT_YCBCR_Y);
+		jas_image_setcmpttype(jp2_image, 1, JAS_IMAGE_CT_YCBCR_CB);
+		jas_image_setcmpttype(jp2_image, 2, JAS_IMAGE_CT_YCBCR_CR);
 		if(i->planes == 4)
 		{
 			jas_image_setcmpttype(jp2_image, 3, JAS_IMAGE_CT_OPACITY);
@@ -102,7 +102,7 @@ export_jp2(image *i, output *output)
 			jas_image_writecmpt(jp2_image, n, 0, y, i->width, 1, pixels[n]);
 		}
 	}
-	options = NULL;
+	options = "mode=int nomct";
 	format = jas_image_strtofmt("jp2");
 	jas_image_encode(jp2_image, jp2_stream, format, options);
 	for(n = 0; n < i->planes; n++)
@@ -110,6 +110,7 @@ export_jp2(image *i, output *output)
 		jas_matrix_destroy(pixels[n]);
 	}
 	jas_image_destroy(jp2_image);
+	jas_stream_flush(jp2_stream);
 	if(shouldclose)
 	{
 		jas_stream_close(jp2_stream);
