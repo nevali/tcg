@@ -2,6 +2,10 @@ EXTRA_DIST = README
 
 bin_PROGRAMS = tcg
 
+tcg_CPPFLAGS = $(WARNING_CPPFLAGS) $(LIBTIFF_CPPFLAGS) $(AM_CPPFLAGS)
+tcg_LDFLAGS = $(LIBTIFF_LDFLAGS) $(AM_LDFLAGS)
+tcg_LDADD = $(LIBTIFF_LIBS) $(AM_LDADD)
+
 tcg_SOURCES = main.c image.c draw.c \
 	colourmap.c \
 	\

@@ -9,6 +9,10 @@ AM_MAINTAINER_MODE
 AC_CONFIG_HEADER([config.h])
 
 AC_PROG_CC
+if test x"$GCC" = x"yes" ; then
+   WARNING_CPPFLAGS="-W -Wall"
+fi
+AC_SUBST([WARNING_CPPFLAGS])
 
 TCG_CHECK_LIBTIFF
 
