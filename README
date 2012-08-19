@@ -4,7 +4,9 @@ The intention is for tcg to be able to generate a variety of colour-accurate
 test patterns at any practical resolution, at up to 16 bits per channel,
 and stored in any of a number of formats.
 
-To-do/Outstanding issues:
+
+To-do/outstanding issues
+========================
 
 * The actual Y/Cb/Cr values in colourmap.c are in need of review.
 
@@ -13,10 +15,6 @@ To-do/Outstanding issues:
 * There is no 10-bpc output option.
 
 * JPEG2000 should be added as an interchange format.
-
-* Multiple frames cannot be written with ffmpeg-style pattern filenames
-  (currently for raw output they are appended to the file; TIFFs are written
-  as multiple pages).
 
 
 Using tcg
@@ -41,6 +39,38 @@ the luma (Y) channel, consisting of a UHDTV 8K image made up for a 4x4 grid
 of the "EBU 75%" test pattern, you would invoke:
 
 $ tcg -s 7680x4320 -T 4x4 -t ebu75 tiff-y16:frame.tiff
+
+
+Percent-sequences are used to perform substitutions into filenames.
+
+To include a literal '%' in a filename, write it as '%%'.
+
+Currently only the '%d' sequence is supported, which is replaced with the
+frame index. The format of this sequence is:
+
+%[-][0][WIDTH]d
+
+The '0' indicates zero-padding to the specified WIDTH. e.g., frame 1 with a
+WIDTH of 4 would result in '0001' with zero-padding, '   1' without.
+
+The '-' indicates that the frame number should be left-justified instead of
+right-justified. If both '-' and '0' are specified, the '0' is ignored.
+
+For example, for frame 15:
+
+   %d     ->  '15'
+   %04d   ->  '0015'
+   %4d    ->  '  15'
+   %-4d   ->  '15  '
+   %-04d  ->  '15  ' 
+
+
+If the filename does not contain any pattern, and multiple frames are
+requested, the result will be output files containing all of the requested
+frames. The precise effects of this are format-dependent. For raw formats,
+all of the frames are simply appended to the file. For TIFF output, each frame
+is written as a subpage in the TIFF.
+
 
 Building from a git checkout
 ============================

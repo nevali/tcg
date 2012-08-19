@@ -31,6 +31,159 @@ static format formats[] = {
 	{ NULL, NULL, NULL, 0, 0, 0 }
 };
 
+static const char *
+parsepattern(output *p, image *i)
+{
+	char format[64];
+	char *buf, *dest, *f;
+	size_t c, len;
+	int top;
+	int prev, width, zeropad, neg;
+
+	len = 0;
+	prev = 0;
+	dest = p->filename;
+	top = -1;
+	for(c = 0; p->pattern[c]; c++)
+	{
+		top = -1;
+		if(prev == '%')
+		{
+			top = c - 1;
+			if(p->pattern[c] == '%')
+			{
+				if(i)
+				{
+					*dest = '%';
+					dest++;
+				}
+				prev = 0;
+				continue;
+			}
+			neg = 0;
+			if(p->pattern[c] == '-')
+			{
+				neg = 1;
+				c++;
+				if(!p->pattern[c])
+				{
+					break;
+				}
+			}
+			zeropad =0;
+			while(p->pattern[c] == '0')
+			{
+				zeropad = 1;
+				c++;
+			}
+			if(!p->pattern[c])
+			{
+				break;
+			}
+			width = 0;
+			while(isdigit(p->pattern[c]))
+			{
+				width = (width * 10) + (p->pattern[c] - '0');
+				c++;
+			}
+			if(!p->pattern[c])
+			{
+				break;
+			}
+			switch(p->pattern[c])
+			{
+			case 'd':
+				p->ispattern = 1;
+				if(i)
+				{
+					f = format;
+					*f = '%';
+					f++;
+					if(width)
+					{
+						if(neg)
+						{
+							*f = '-';
+							f++;
+						}
+						if(zeropad)
+						{
+							*f = '0';
+							f++;
+						}
+						f += sprintf(f, "%d", width);
+					}
+					*f = 'l';
+					f++;
+					*f = 'u';
+					f++;
+					*f = 0;
+					dest += sprintf(dest, format, (unsigned long) i->frame);
+				}
+				else
+				{
+					len += width + 32;
+				}
+				break;
+			default:
+				if(i)
+				{
+					/* Just write the characters verbatim */
+					for(; (size_t) top <= c; top++)
+					{
+						*dest = p->pattern[top];
+						dest++;
+					}
+				}
+				else
+				{
+					fprintf(stderr, "%s: warning: unexpected type '%c' in format string '%s'\n", progname, p->pattern[c], p->pattern);
+				}
+			}
+			top = -1;
+			prev = 0;
+			continue;
+		}
+		if(i && p->pattern[c] != '%')
+		{
+			*dest = p->pattern[c];
+			dest++;
+		}
+		prev = p->pattern[c];
+	}
+	if(top != -1)
+	{
+		if(i)
+		{
+			for(; (size_t) top <= c; top++)
+			{
+				*dest = p->pattern[top];
+				dest++;
+			}
+		}
+		else
+		{
+			fprintf(stderr, "%s: warning: unexpected end of format '%s' in '%s'\n", progname, &(p->pattern[top]), p->pattern);			
+		}
+	}	
+	if(i)
+	{
+		*dest = 0;
+		return p->filename;
+	}
+	if(p->ispattern)
+	{
+		buf = malloc(len + c + 1);
+		if(!buf)
+		{
+			return NULL;
+		}
+		p->filename = buf;
+		return p->filename;
+	}
+	return p->pattern;
+}
+
 /* Create an array of output structures from a set of arguments */
 output *
 output_parse(int argc, char **argv)
@@ -92,7 +245,10 @@ output_parse(int argc, char **argv)
 			p[c].pattern = argv[c];
 			p[c].format = def;
 		}
-		
+		if(!parsepattern(&(p[c]), NULL))
+		{
+			return NULL;
+		}
 	}
 	return p;
 }
@@ -110,6 +266,7 @@ output_destroy(output *outputs)
 			/* Close any file handles */
 			outputs[c].format->fn(NULL, &(outputs[c]));
 		}
+		free(outputs[c].filename);
 	}
 	free(outputs);
 	return 0;
@@ -155,7 +312,7 @@ output_filename(output *o, image *i, int *shouldclose)
 	{
 		/* Open a new file based upon the pattern */
 		*shouldclose = 1;
-		return NULL;
+		return parsepattern(o, i);
 	}
 	/* Write to the existing file */
 	*shouldclose = 0;
@@ -166,11 +323,18 @@ output_filename(output *o, image *i, int *shouldclose)
 FILE *
 output_file(output *o, image *i, int *shouldclose)
 {
+	const char *fn;
+
 	if(o->ispattern)
 	{
 		/* Open a new file based upon the pattern */
 		*shouldclose = 1;
-		return NULL;
+		fn = parsepattern(o, i);
+		if(!fn)
+		{
+			return NULL;
+		}
+		return fopen(fn, "w");
 	}
 	*shouldclose = 0;
 	if(!o->d.f)

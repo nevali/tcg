@@ -24,6 +24,7 @@
 # include <errno.h>
 # include <string.h>
 # include <math.h>
+# include <ctype.h>
 
 # include "tiffio.h"
 
@@ -115,6 +116,7 @@ struct output_s
 {
 	format *format;
 	const char *pattern;
+	char *filename;
 	int ispattern;
 	/* Format-specific data */
 	union
