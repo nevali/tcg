@@ -30,10 +30,10 @@ generate_blacklevel(image *i, uint32_t frame)
 	(void) frame;
 
 	/* Patches are squares 13.35% of the height */   
-	size = i->height / 7.5;
+	size = i->vpheight / 7.5;
 	/* Find the centre */
-	midx = i->width / 2;
-	midy = i->height / 2;
+	midx = i->vpwidth / 2;
+	midy = i->vpheight / 2;
 	/* Fill with black */
 	if(image_clear(i, &black))
 	{

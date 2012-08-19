@@ -35,7 +35,7 @@ generate_ebu100(image *i, uint32_t frame)
 	bars[5] = &red100;
 	bars[6] = &blue100;
 	bars[7] = &black;
-	return image_draw_bars(i, 0, 0, i->width, i->height, bars, 8);
+	return image_draw_bars(i, 0, 0, i->vpwidth, i->vpheight, bars, 8);
 }
 
 	

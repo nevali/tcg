@@ -30,22 +30,22 @@ generate_ebu3325_1(image *i, uint32_t frame)
 	(void) frame;
 
 	/* Patches are squares 13.35% of the height */   
-	size = i->height / 7.5;
+	size = i->vpheight / 7.5;
 	/* The offset is 0.4 of the width or height relative to the centre */
-	ofx = i->width * 0.4;
-	ofy = i->height * 0.4;
+	ofx = i->vpwidth * 0.4;
+	ofy = i->vpheight * 0.4;
 	/* Fill with 50% grey */
 	image_clear(i, &grey50);
 	/* Place the centre white square */
-	image_draw_fillrect(i, (i->width - size) / 2, (i->height - size) / 2, size, size, &white);
+	image_draw_fillrect(i, (i->vpwidth - size) / 2, (i->vpheight - size) / 2, size, size, &white);
 	/* Place the top square */
-	image_draw_fillrect(i, (i->width - size) / 2, (i->height - size) / 2 - ofy, size, size, &black);
+	image_draw_fillrect(i, (i->vpwidth - size) / 2, (i->vpheight - size) / 2 - ofy, size, size, &black);
 	/* Place the bottom square */
-	image_draw_fillrect(i, (i->width - size) / 2, (i->height - size) / 2 + ofy, size, size, &black);
+	image_draw_fillrect(i, (i->vpwidth - size) / 2, (i->vpheight - size) / 2 + ofy, size, size, &black);
 	/* Place the left square */
-	image_draw_fillrect(i, (i->width - size) / 2 - ofx, (i->height - size) / 2, size, size, &black);
+	image_draw_fillrect(i, (i->vpwidth - size) / 2 - ofx, (i->vpheight - size) / 2, size, size, &black);
 	/* Place the right square */
-	image_draw_fillrect(i, (i->width - size) / 2 + ofx, (i->height - size) / 2, size, size, &black);
+	image_draw_fillrect(i, (i->vpwidth - size) / 2 + ofx, (i->vpheight - size) / 2, size, size, &black);
 
 	return 0;
 }

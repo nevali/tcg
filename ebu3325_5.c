@@ -30,14 +30,14 @@ generate_ebu3325_5_red(image *i, uint32_t frame)
 	(void) frame;
 
 	/* Patches are squares 13.35% of the height */   
-	size = i->height / 7.5;
+	size = i->vpheight / 7.5;
 	/* Fill with black */
 	if(image_clear(i, &black))
 	{
 		return -1;
 	}
 	/* Place the centre square */
-	if(image_draw_fillrect(i, (i->width - size) / 2, (i->height - size) / 2, size, size, &ebu_red))
+	if(image_draw_fillrect(i, (i->vpwidth - size) / 2, (i->vpheight - size) / 2, size, size, &ebu_red))
 	{
 		return -1;
 	}
@@ -52,14 +52,14 @@ generate_ebu3325_5_green(image *i, uint32_t frame)
 	(void) frame;
 
 	/* Patches are squares 13.35% of the height */   
-	size = i->height / 7.5;
+	size = i->vpheight / 7.5;
 	/* Fill with black */
 	if(image_clear(i, &black))
 	{
 		return -1;
 	}
 	/* Place the centre square */
-	if(image_draw_fillrect(i, (i->width - size) / 2, (i->height - size) / 2, size, size, &ebu_green))
+	if(image_draw_fillrect(i, (i->vpwidth - size) / 2, (i->vpheight - size) / 2, size, size, &ebu_green))
 	{
 		return -1;
 	}
@@ -74,14 +74,14 @@ generate_ebu3325_5_blue(image *i, uint32_t frame)
 	(void) frame;
 
 	/* Patches are squares 13.35% of the height */   
-	size = i->height / 7.5;
+	size = i->vpheight / 7.5;
 	/* Fill with black */
 	if(image_clear(i, &black))
 	{
 		return -1;
 	}
 	/* Place the centre square */
-	if(image_draw_fillrect(i, (i->width - size) / 2, (i->height - size) / 2, size, size, &ebu_blue))
+	if(image_draw_fillrect(i, (i->vpwidth - size) / 2, (i->vpheight - size) / 2, size, size, &ebu_blue))
 	{
 		return -1;
 	}
@@ -98,14 +98,14 @@ generate_ebu3325_5(image *i, uint32_t frame)
 	frame %= 15;
 	col = ebu_shades[frame];
 	/* Patches are squares 13.35% of the height */   
-	size = i->height / 7.5;
+	size = i->vpheight / 7.5;
 	/* Fill with black */
 	if(image_clear(i, &black))
 	{
 		return -1;
 	}
 	/* Place the centre square */
-	if(image_draw_fillrect(i, (i->width - size) / 2, (i->height - size) / 2, size, size, col))
+	if(image_draw_fillrect(i, (i->vpwidth - size) / 2, (i->vpheight - size) / 2, size, size, col))
 	{
 		return -1;
 	}

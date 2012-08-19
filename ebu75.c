@@ -28,7 +28,7 @@ generate_ebu75(image *i, uint32_t frame)
 	
 	(void) frame;
 
-	h = i->height / 10;
+	h = i->vpheight / 10;
 	
 	bars[0] = &white;
 	bars[1] = &yellow75;
@@ -37,7 +37,7 @@ generate_ebu75(image *i, uint32_t frame)
 	bars[4] = &magenta75;
 	bars[5] = &red75;
 	bars[6] = &blue75;
-	if(image_draw_bars(i, 0, 0, i->width, i->height - h, bars, 7))
+	if(image_draw_bars(i, 0, 0, i->vpwidth, i->vpheight - h, bars, 7))
 	{
 		return -1;
 	}
@@ -48,7 +48,7 @@ generate_ebu75(image *i, uint32_t frame)
 	bars[4] = &cyan75;
 	bars[5] = &black;
 	bars[6] = &white;
-	if(image_draw_bars(i, 0, i->height - h, i->width, h, bars, 7))
+	if(image_draw_bars(i, 0, i->vpheight - h, i->vpwidth, h, bars, 7))
 	{
 		return -1;
 	}
