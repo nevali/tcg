@@ -193,14 +193,58 @@ generateframe(image *i, generator *g, uint32_t width, uint32_t height, uint32_t 
 	return 0;
 }
 
+static int
+storeframe(image *i, int argc, char **argv)
+{
+	int e, d;
+	size_t c;
+	const char *format;
+	char *t;
+
+	e = 0;
+	for(d = 0; d < argc; d++)
+	{
+		t = strchr(argv[d], ':');
+		if(t)
+		{
+			format = argv[d];
+			*t = 0;
+			t++;
+		}
+		else
+		{
+			format = DEFAULT_FORMAT;
+			t = argv[d];
+		}
+		for(c = 0; formats[c].name; c++)
+		{
+			if(!strcmp(formats[c].name, format))
+			{
+				if(formats[c].fn(i, t))
+				{
+					fprintf(stderr, "%s: %s: %s\n", progname, t, strerror(errno));
+					e |= 1;
+				}
+				break;
+			}
+		}
+		if(!formats[c].name)
+		{
+			fprintf(stderr, "%s: unsupported format '%s'\n", progname, format);
+			e |= 2;
+		}
+	}
+	return e;
+}
+
 int
 main(int argc, char **argv)
 {
 	size_t c;
-	unsigned long frame;
+	unsigned long firstframe, lastframe, frame;
 	image *i;
-	int e, ch, width, height;
-	char *t, *format, *pattern;
+	int e, ch, width, height, r;
+	char *t, *pattern;
 	uint32_t xtiles, ytiles, xsize, ysize;
 
 	progname = argv[0];
@@ -210,6 +254,8 @@ main(int argc, char **argv)
 	ytiles = 1;
 	xsize = 0;
 	ysize = 0;
+	firstframe = 0;
+	lastframe = 0;
 	pattern = NULL;
 	while((ch = getopt(argc, argv, "hs:t:f:T:")) != -1)
 	{
@@ -232,7 +278,8 @@ main(int argc, char **argv)
 			break;
 		case 'f':
 			t = NULL;
-			frame = strtoul(optarg, &t, 10);
+			firstframe = strtoul(optarg, &t, 10);
+			lastframe = firstframe;
 			if(t && *t)
 			{
 				fprintf(stderr, "%s: invalid frame number '%s'\n", progname, optarg);
@@ -293,43 +340,20 @@ main(int argc, char **argv)
 		fprintf(stderr, "%s: failed to allocate image\n", argv[0]);
 		return 1;
 	}
-	if(generateframe(i, &(generators[c]), width, height, frame, xtiles, ytiles, &xsize, &ysize))
-	{
-		fprintf(stderr, "%s: %s: %s\n", progname, pattern, strerror(errno));
-		return 1;
-	}
 	e = 0;
-	for(; optind < argc; optind++)
+	for(frame = firstframe; frame <= lastframe; frame++)
 	{
-		t = strchr(argv[optind], ':');
-		if(t)
+		if(generateframe(i, &(generators[c]), width, height, frame, xtiles, ytiles, &xsize, &ysize))
 		{
-			format = argv[optind];
-			*t = 0;
-			t++;
+			fprintf(stderr, "%s: %s: %s\n", progname, pattern, strerror(errno));
+			return 1;
 		}
-		else
+		r = storeframe(i, argc - optind, &(argv[optind]));
+		if(r < 0)
 		{
-			format = DEFAULT_FORMAT;
-			t = argv[optind];
+			return 1;
 		}
-		for(c = 0; formats[c].name; c++)
-		{
-			if(!strcmp(formats[c].name, format))
-			{
-				if(formats[c].fn(i, t))
-				{
-					fprintf(stderr, "%s: %s: %s\n", progname, t, strerror(errno));
-					e |= 1;
-				}
-				break;
-			}			
-		}
-		if(!formats[c].name)
-		{
-			fprintf(stderr, "%s: unsupported format '%s'\n", progname, format);
-			e |= 2;
-		}
+		e |= r;
 	}
 	if((e & 2))
 	{
