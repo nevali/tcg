@@ -36,6 +36,10 @@ image_create(int format, uint32_t width, uint32_t height)
 	i->format = format;
 	i->width = width;
 	i->height = height;
+	i->vpx = 0;
+	i->vpy = 0;
+	i->vpwidth = width;
+	i->vpheight = height;
 	switch(i->format)
 	{
 	case PF_RGB:
@@ -75,16 +79,53 @@ image_pixel(image *i, uint32_t x, uint32_t y, pixelref *ref)
 	int c;
 
 	memset(ref, 0, sizeof(pixelref));
-	if(x >= i->width ||
-	   y >= i->height)
+	if(x >= i->vpwidth ||
+	   y >= i->vpheight)
 	{
 		errno = EINVAL;
 		return -1;
 	}
+	x += i->vpx;
+	y += i->vpy;
 	ofs = (y * i->width) + x;
 	for(c = 0; c < i->planes; c++)
 	{
 		ref->pixel[c] = &(i->pixels[c][ofs]);
 	}
+	return 0;
+}
+
+int
+image_viewport(image *i, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+{
+	if(x > i->width || width > i->width ||
+	   y > i->height || height > i->height)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+	i->vpx = x;
+	i->vpy = y;
+	i->vpwidth = width;
+	i->vpheight = height;
+	if(x || y || width != i->width || height != i->height)
+	{
+		i->viewport = 1;
+	}
+	else
+	{
+		i->viewport = 0;
+	}
+	return 0;
+}
+
+int
+image_viewport_reset(image *i)
+{
+	i->viewport = 0;
+	i->vpx = 0;
+	i->vpy = 0;
+	i->vpwidth = i->width;
+	i->vpheight = i->height;
 	return 0;
 }

@@ -194,7 +194,6 @@ main(int argc, char **argv)
 		exit(255);
 	}
 	image_clear(i, &black);
-
 	for(c = 0; generators[c].name; c++)
 	{
 		if(!strcmp(generators[c].name, pattern))

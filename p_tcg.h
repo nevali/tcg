@@ -80,6 +80,11 @@ struct image_s
 	int planes;
 	uint32_t width;
 	uint32_t height;
+	int viewport;
+	uint32_t vpx;
+	uint32_t vpy;
+	uint32_t vpwidth;
+	uint32_t vpheight;
 	pixel *pixels[MAX_PLANES];
 };
 
@@ -122,6 +127,9 @@ int image_clear(image *i, colour *col);
 int image_draw_hline(image *i, uint32_t x, uint32_t y, uint32_t w, colour *c);
 int image_draw_fillrect(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, colour *c);
 int image_draw_bars(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, colour **bars, size_t nbars);
+int image_viewport(image *i, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+int image_viewport_reset(image *i);
+
 
 int image_export_ycc444_16_planar(image *i, const char *pathname);
 int image_export_ycc444_8_planar(image *i, const char *pathname);

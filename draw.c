@@ -32,6 +32,10 @@ image_clear(image *i, colour *c)
 		errno = EINVAL;
 		return -1;
 	}
+	if(i->viewport)
+	{
+		return image_draw_fillrect(i, 0, 0, i->vpwidth, i->vpheight, c);
+	}
 	npixels = i->width * i->height;
 	for(d = 0; d < i->planes; d++)
 	{
@@ -61,9 +65,9 @@ image_draw_hline(image *i, uint32_t x, uint32_t y, uint32_t w, colour *c)
 	{
 		return -1;
 	}
-	if(w > (i->width - x))
+	if(w > (i->vpwidth - x))
 	{
-		w = i->width - x;
+		w = i->vpwidth - x;
 	}
 	for(d = 0; d < i->planes; d++)
 	{
