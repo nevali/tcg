@@ -61,6 +61,7 @@ usage(void)
 	printf("   -s [WIDTHx]HEIGHT  Specify frame size\n");
 	printf("   -t TYPE            Generate a TYPE pattern\n");
 	printf("   -f INDEX           Specify frame index (for multi-frame patterns)\n");
+	printf("   -T WIDE[xTALL]     Split the image into WIDE x TALL tiles (default for both is 1)\n");
 	printf("\n");
 	printf("FORMAT is one of:\n\n");
 	printf("%-16s %-40s %6s %6s %6s\n", "NAME", "DESCRIPTION", "PLANES", "DEPTH", "PLANAR");
@@ -82,7 +83,7 @@ usage(void)
 		   DEFAULT_FORMAT, DEFAULT_GENERATOR);
 }
 
-int
+static int
 parsesize(char *size, int *width, int *height)
 {
 	char *t;
@@ -115,6 +116,83 @@ parsesize(char *size, int *width, int *height)
 	return 0;
 }
 
+static int
+parsetiles(char *tiles, uint32_t *wide, uint32_t *tall)
+{
+	char *t;
+	long l;
+
+	t = NULL;
+	l = strtol(tiles, &t, 10);
+	if(l < 1 || l > 64)
+	{
+		fprintf(stderr, "%s: cannot parse tile size '%s'\n", progname, tiles);
+		return -1;
+	}
+	*wide = l;
+	*tall = 1;
+	if(t && *t)
+	{
+		if(*t != 'x')
+		{
+			fprintf(stderr, "%s: cannot parse tile size '%s'\n", progname, tiles);
+			return -1;
+		}
+		t++;
+		if(*t)
+		{
+			l = strtol(t, &t, 10);
+			if(l < 1 || l > 64)
+			{
+				fprintf(stderr, "%s: cannot parse tile size '%s'\n", progname, tiles);
+				return -1;
+			}
+			*tall = l;
+		}
+	}
+	return 0;
+}
+
+static int
+generateframe(image *i, generator *g, uint32_t width, uint32_t height, uint32_t frame, uint32_t xtiles, uint32_t ytiles, uint32_t *xsize, uint32_t *ysize)
+{
+	uint32_t xspace, yspace, yc, xc, x, y;
+
+	image_viewport_reset(i);
+	image_clear(i, &black);
+	if(!*xsize)
+	{
+		*xsize = (uint32_t) round((double) width / (double) xtiles);
+		*ysize = (uint32_t) round((double) height / (double) ytiles);
+	}
+	yspace = *ysize;
+	y = 0;
+	for(yc = 0; yc < ytiles; yc++)
+	{
+		if(yc == ytiles - 1)
+		{
+			yspace = height - y;
+		}
+		x = 0;
+		xspace = *xsize;
+		for(xc = 0; xc < xtiles; xc++)
+		{
+			if(xc == xtiles - 1)
+			{
+				xspace = width - x;
+			}
+			image_viewport(i, x, y, xspace, yspace);
+			if(g->fn(i, frame))
+			{
+				return -1;
+			}
+			x += xspace;
+		}
+		y += yspace;
+	}
+	return 0;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -123,12 +201,17 @@ main(int argc, char **argv)
 	image *i;
 	int e, ch, width, height;
 	char *t, *format, *pattern;
+	uint32_t xtiles, ytiles, xsize, ysize;
 
 	progname = argv[0];
 	width = 1920;
 	height = 1080;
+	xtiles = 1;
+	ytiles = 1;
+	xsize = 0;
+	ysize = 0;
 	pattern = NULL;
-	while((ch = getopt(argc, argv, "hs:t:f:")) != -1)
+	while((ch = getopt(argc, argv, "hs:t:f:T:")) != -1)
 	{
 		switch(ch)
 		{
@@ -137,6 +220,12 @@ main(int argc, char **argv)
 			return 0;
 		case 's':
 			if(parsesize(optarg, &width, &height))
+			{
+				return 1;
+			}
+			break;
+		case 'T':
+			if(parsetiles(optarg, &xtiles, &ytiles))
 			{
 				return 1;
 			}
@@ -190,24 +279,23 @@ main(int argc, char **argv)
 	{
 		if(!strcmp(generators[c].name, pattern))
 		{
-			i = image_create(generators[c].pixelformat, width, height);
-			if(!i)
-			{
-				fprintf(stderr, "%s: failed to allocate image\n", argv[0]);
-				exit(255);
-			}
-			image_clear(i, &black);
-			if(generators[c].fn(i, (uint32_t) frame))
-			{
-				fprintf(stderr, "%s: %s: %s\n", progname, pattern, strerror(errno));
-				return -1;
-			}
 			break;
 		}
 	}
 	if(!generators[c].name)
 	{
 		fprintf(stderr, "%s: internal error: pattern type '%s' not found\n", progname, pattern);
+		return 1;
+	}
+	i = image_create(generators[c].pixelformat, width, height);
+	if(!i)
+	{
+		fprintf(stderr, "%s: failed to allocate image\n", argv[0]);
+		return 1;
+	}
+	if(generateframe(i, &(generators[c]), width, height, frame, xtiles, ytiles, &xsize, &ysize))
+	{
+		fprintf(stderr, "%s: %s: %s\n", progname, pattern, strerror(errno));
 		return 1;
 	}
 	e = 0;
