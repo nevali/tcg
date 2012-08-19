@@ -35,6 +35,9 @@
 # define PF_RGBA                        1
 # define PF_YCBCR                       2
 
+# define DEFAULT_FORMAT                 "ycc444p16be"
+# define DEFAULT_GENERATOR              "ebu100"
+
 typedef uint16_t pixel;
 typedef struct pixelref_s pixelref;
 typedef struct colour_s colour;
@@ -124,6 +127,8 @@ struct output_s
 	} d;
 };
 
+extern const char *progname;
+
 extern colour sub_black, super_white;
 extern colour black, white, grey50, grey20;
 extern colour red100, green100, blue100, cyan100, magenta100, yellow100;
@@ -149,6 +154,10 @@ int image_draw_bars(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, co
 int image_viewport(image *i, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 int image_viewport_reset(image *i);
 
+output *output_parse(int argc, char **argv);
+format *output_formats(void);
+int output_destroy(output *outputs);
+int output_store(image *i, output *outputs);
 
 int export_ycc444_16_planar(image *i, output *out);
 int export_ycc444_8_planar(image *i, output *out);

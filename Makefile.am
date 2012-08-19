@@ -6,7 +6,7 @@ tcg_CPPFLAGS = $(WARNING_CPPFLAGS) $(LIBTIFF_CPPFLAGS) $(AM_CPPFLAGS)
 tcg_LDFLAGS = $(LIBTIFF_LDFLAGS) $(AM_LDFLAGS)
 tcg_LDADD = $(LIBTIFF_LIBS) $(AM_LDADD)
 
-tcg_SOURCES = main.c image.c draw.c \
+tcg_SOURCES = main.c image.c draw.c output.c \
 	colourmap.c \
 	\
 	ebu100.c ebu75.c ebu3325_1.c ebu3325_2.c ebu3325_5.c \

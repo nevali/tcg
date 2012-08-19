@@ -20,21 +20,7 @@
 
 #include "p_tcg.h"
 
-#define DEFAULT_FORMAT                  "ycc444p16be"
-#define DEFAULT_GENERATOR               "ebu100"
-
-static const char *progname;
-
-static format formats[] = {
-	{ "ycc444p16be", export_ycc444_16_planar, "Raw 4:4:4 YCbCr 16-bpc big-endian", 3, 16, 1 },
-	{ "ycc444p8", export_ycc444_8_planar, "Raw 4:4:4 YCbCr 8-bpc", 3, 8, 1 },
-#ifdef WITH_LIBTIFF
-	{ "tiff-ycc444p16", export_tiff_ycc444_16, "4:4:4 YCbCr 16-bpc TIFF", 3, 16, 1 },
-	{ "tiff-ycc444p8", export_tiff_ycc444_8, "4:4:4 YCbCr 8-bpc TIFF", 3, 8, 1 },
-	{ "tiff-y16", export_tiff_y16, "Greyscale (luma) 16-bpc TIFF", 3, 8, 1 },
-#endif
-	{ NULL, NULL, NULL, 0, 0, 0 }
-};
+const char *progname;
 
 static generator generators[] = {
 	{ "ebu100", generate_ebu100, "EBU 100% colour bars", PF_YCBCR },
@@ -54,6 +40,7 @@ static void
 usage(void)
 {
 	size_t c;
+	format *formats;
 
 	printf("Usage: %s [OPTIONS] [FORMAT:]OUTFILE [[FORMAT:]OUTFILE] ...\n\n", progname);
 	printf("OPTIONS is one or more of:\n");
@@ -66,11 +53,15 @@ usage(void)
 	printf("\n");
 	printf("FORMAT is one of:\n\n");
 	printf("%-16s %-40s %6s %6s %6s\n", "NAME", "DESCRIPTION", "PLANES", "DEPTH", "PLANAR");
-	for(c = 0; formats[c].name; c++)
+	formats = output_formats();
+	if(formats)
 	{
-		printf("%-16s %-40s %6d %6d    %c\n", formats[c].name,
-			   formats[c].description, formats[c].planes, formats[c].depth,
+		for(c = 0; formats[c].name; c++)
+		{
+			printf("%-16s %-40s %6d %6d    %c\n", formats[c].name,
+				   formats[c].description, formats[c].planes, formats[c].depth,
 			   formats[c].planar ? 'Y' : 'N');
+		}
 	}
 	printf("\n");
 	printf("TYPE is one of:\n\n");
@@ -221,95 +212,6 @@ generateframe(image *i, generator *g, uint32_t width, uint32_t height, uint32_t 
 	return 0;
 }
 
-output *
-parseoutputs(int argc, char **argv)
-{
-	output *p;
-	int c, d;
-	char *t;
-	format *def;
-
-	p = (output *) calloc(argc + 1, sizeof(output));
-	if(!p)
-	{
-		return NULL;
-	}
-	/* The default format is that matching DEFAULT_FORMAT, or the first in
-	 * the list if all else fails.
-	 */
-	def = NULL;
-	for(d = 0; formats[d].name; d++)
-	{
-		if(!d)
-		{
-			def = &(formats[d]);
-		}
-		if(!strcmp(formats[d].name, DEFAULT_FORMAT))
-		{
-			def = &(formats[d]);
-			break;
-		}   
-	}
-	/* For each argument, the pattern is [FORMAT:]PATH
-	 * If FORMAT is not specified, the default format is used. If FORMAT is
-	 * specified, but is not supported, the 'format' member of the output
-	 * structure is set to NULL and no output will be written.
-	 */
-	for(c = 0; c < argc; c++)
-	{
-		t = strchr(argv[c], ':');
-		if(t)
-		{
-			*t = 0;
-			t++;
-			p[c].pattern = t;
-			for(d = 0; formats[d].name; d++)
-			{
-				if(!strcmp(formats[d].name, argv[c]))
-				{
-					p[c].format = &(formats[d]);
-					break;
-				}
-			}
-			if(!formats[d].name)
-			{
-				fprintf(stderr, "%s: unsupported format '%s'\n", progname, argv[c]);
-			}
-		}
-		else
-		{
-			p[c].pattern = argv[c];
-			p[c].format = def;
-		}
-		
-	}
-	return p;
-}
-
-static int
-storeframe(image *i, output *outputs)
-{
-	int e;
-	size_t c;
-	char *t;
-
-	e = 0;
-	for(c = 0; outputs[c].pattern; c++)
-	{
-		if(!outputs[c].format)
-		{
-			e |= 2;
-			continue;
-		}
-		if(outputs[c].format->fn(i, &(outputs[c])))
-		{
-			fprintf(stderr, "%s: %s: %s\n", progname, t, strerror(errno));
-			e |= 1;
-		}
-	}
-	return e;
-}
-
 int
 main(int argc, char **argv)
 {
@@ -392,7 +294,7 @@ main(int argc, char **argv)
 		usage();
 		return 1;
 	}
-	outputs = parseoutputs(argc - optind, &(argv[optind]));
+	outputs = output_parse(argc - optind, &(argv[optind]));
 	if(!outputs)
 	{
 		fprintf(stderr, "%s: %s\n", progname, strerror(errno));
@@ -427,7 +329,7 @@ main(int argc, char **argv)
 			fprintf(stderr, "%s: %s: %s\n", progname, pattern, strerror(errno));
 			return 1;
 		}
-		r = storeframe(i, outputs);
+		r = output_store(i, outputs);
 		if(r < 0)
 		{
 			return 1;
@@ -435,15 +337,6 @@ main(int argc, char **argv)
 		e |= r;
 	}
 	/* Clean up */
-	for(c = 0; outputs[c].pattern; c++)
-	{
-		if(outputs[c].format)
-		{
-			/* Close any file handles */
-			outputs[c].format->fn(NULL, &(outputs[c]));
-		}
-	}
-	free(outputs);	  
 	if((e & 2))
 	{
 		fprintf(stderr, "See '%s -h' for a list of supported formats\n", progname);
