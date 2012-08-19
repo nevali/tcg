@@ -23,7 +23,7 @@
 #ifdef WITH_LIBTIFF
 
 int
-image_export_tiff_ycc444_8(image *i, const char *pathname)
+export_tiff_ycc444_8(image *i, const char *pathname)
 {
 	int d;
 	uint8_t *row;

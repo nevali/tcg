@@ -21,7 +21,7 @@
 #include "p_tcg.h"
 
 int
-image_export_ycc444_8_planar(image *i, const char *pathname)
+export_ycc444_8_planar(image *i, const char *pathname)
 {
 	uint8_t *row;
 	int d;

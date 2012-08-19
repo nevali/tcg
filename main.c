@@ -26,12 +26,12 @@
 static const char *progname;
 
 static format formats[] = {
-	{ "ycc444p16be", image_export_ycc444_16_planar, "Raw 4:4:4 YCbCr 16-bpc big-endian", 3, 16, 1 },
-	{ "ycc444p8", image_export_ycc444_8_planar, "Raw 4:4:4 YCbCr 8-bpc", 3, 8, 1 },
+	{ "ycc444p16be", export_ycc444_16_planar, "Raw 4:4:4 YCbCr 16-bpc big-endian", 3, 16, 1 },
+	{ "ycc444p8", export_ycc444_8_planar, "Raw 4:4:4 YCbCr 8-bpc", 3, 8, 1 },
 #ifdef WITH_LIBTIFF
-	{ "tiff-ycc444p16", image_export_tiff_ycc444_16, "4:4:4 YCbCr 16-bpc TIFF", 3, 16, 1 },
-	{ "tiff-ycc444p8", image_export_tiff_ycc444_8, "4:4:4 YCbCr 8-bpc TIFF", 3, 8, 1 },
-	{ "tiff-y16", image_export_tiff_y16, "Greyscale (luma) 16-bpc TIFF", 3, 8, 1 },
+	{ "tiff-ycc444p16", export_tiff_ycc444_16, "4:4:4 YCbCr 16-bpc TIFF", 3, 16, 1 },
+	{ "tiff-ycc444p8", export_tiff_ycc444_8, "4:4:4 YCbCr 8-bpc TIFF", 3, 8, 1 },
+	{ "tiff-y16", export_tiff_y16, "Greyscale (luma) 16-bpc TIFF", 3, 8, 1 },
 #endif
 	{ NULL, NULL, 0, 0, 0 }
 };

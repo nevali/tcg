@@ -23,7 +23,7 @@
 #ifdef WITH_LIBTIFF
 
 int
-image_export_tiff_y16(image *i, const char *pathname)
+export_tiff_y16(image *i, const char *pathname)
 {
 	int d;
 	size_t n, y;

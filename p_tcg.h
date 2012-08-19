@@ -131,13 +131,12 @@ int image_viewport(image *i, uint32_t x, uint32_t y, uint32_t width, uint32_t he
 int image_viewport_reset(image *i);
 
 
-int image_export_ycc444_16_planar(image *i, const char *pathname);
-int image_export_ycc444_8_planar(image *i, const char *pathname);
-
+int export_ycc444_16_planar(image *i, const char *pathname);
+int export_ycc444_8_planar(image *i, const char *pathname);
 # ifdef WITH_LIBTIFF
-int image_export_tiff_ycc444_16(image *i, const char *pathname);
-int image_export_tiff_ycc444_8(image *i, const char *pathname);
-int image_export_tiff_y16(image *i, const char *pathname);
+int export_tiff_ycc444_16(image *i, const char *pathname);
+int export_tiff_ycc444_8(image *i, const char *pathname);
+int export_tiff_y16(image *i, const char *pathname);
 # endif
 
 int generate_ebu100(image *i, uint32_t frame);
