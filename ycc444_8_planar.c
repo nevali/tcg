@@ -24,7 +24,7 @@ int
 export_ycc444_8_planar(image *i, output *output)
 {
 	uint8_t *row;
-	int d;
+	int d, shouldclose;
 	size_t n, c, y, x, nbytes;
 	FILE *f;
 
@@ -43,18 +43,7 @@ export_ycc444_8_planar(image *i, output *output)
 	{
 		return -1;
 	}
-	if(output->ispattern)
-	{
-		
-	}
-	else
-	{
-		if(!output->d.f)
-		{
-			output->d.f = fopen(output->pattern, "w");
-		}
-		f = output->d.f;
-	}
+	f = output_file(output, i, &shouldclose);
 	if(!f)
 	{
 		free(row);
@@ -76,7 +65,7 @@ export_ycc444_8_planar(image *i, output *output)
 		}
 	}
 	free(row);
-	if(output->ispattern)
+	if(shouldclose)
 	{
 		fclose(f);
 	}

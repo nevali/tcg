@@ -25,9 +25,10 @@
 int
 export_tiff_y16(image *i, output *output)
 {
-	int d;
+	int d, shouldclose;
 	size_t n, y;
 	TIFF *tif;
+	const char *fn;
 
 	if(!i)
 	{
@@ -37,18 +38,12 @@ export_tiff_y16(image *i, output *output)
 		}
 		return 0;
 	}
-	if(output->ispattern)
+	fn = output_filename(output, i, &shouldclose);
+	if(!output->d.tiff)
 	{
-		
+		output->d.tiff = TIFFOpen(fn, "w");
 	}
-	else
-	{
-		if(!output->d.tiff)
-		{
-			output->d.tiff = TIFFOpen(output->pattern, "w");
-		}
-		tif = output->d.tiff;
-	}
+	tif = output->d.tiff;
 
 	TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, i->width);
 	TIFFSetField(tif, TIFFTAG_IMAGELENGTH, i->height);
@@ -71,9 +66,10 @@ export_tiff_y16(image *i, output *output)
 		n += i->width;
 	}
 	TIFFWriteDirectory(tif);
-	if(output->ispattern)
+	if(shouldclose)
 	{
 		TIFFClose(tif);
+		output->d.tiff = NULL;
 	}
 	return 0;
 }

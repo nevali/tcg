@@ -158,6 +158,8 @@ output *output_parse(int argc, char **argv);
 format *output_formats(void);
 int output_destroy(output *outputs);
 int output_store(image *i, output *outputs);
+const char *output_filename(output *o, image *i, int *shouldclose);
+FILE *output_file(output *o, image *i, int *shouldclose);
 
 int export_ycc444_16_planar(image *i, output *out);
 int export_ycc444_8_planar(image *i, output *out);

@@ -147,3 +147,36 @@ output_formats(void)
 	return formats;
 }
 
+/* Return the output filename for a given frame */
+const char *
+output_filename(output *o, image *i, int *shouldclose)
+{
+	if(o->ispattern)
+	{
+		/* Open a new file based upon the pattern */
+		*shouldclose = 1;
+		return NULL;
+	}
+	/* Write to the existing file */
+	*shouldclose = 0;
+	return o->pattern;
+}
+
+/* Return an open stdio file for a given frame */
+FILE *
+output_file(output *o, image *i, int *shouldclose)
+{
+	if(o->ispattern)
+	{
+		/* Open a new file based upon the pattern */
+		*shouldclose = 1;
+		return NULL;
+	}
+	*shouldclose = 0;
+	if(!o->d.f)
+	{
+		o->d.f = fopen(o->pattern, "w");
+	}
+	return o->d.f;
+}
+
