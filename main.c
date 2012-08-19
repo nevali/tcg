@@ -33,21 +33,21 @@ static format formats[] = {
 	{ "tiff-ycc444p8", export_tiff_ycc444_8, "4:4:4 YCbCr 8-bpc TIFF", 3, 8, 1 },
 	{ "tiff-y16", export_tiff_y16, "Greyscale (luma) 16-bpc TIFF", 3, 8, 1 },
 #endif
-	{ NULL, NULL, 0, 0, 0 }
+	{ NULL, NULL, NULL, 0, 0, 0 }
 };
 
 static generator generators[] = {
-	{ "ebu100", generate_ebu100, "EBU 100% colour bars" },
-	{ "ebu75", generate_ebu75, "EBU 75% colour bars" },
-	{ "ebu3325-1", generate_ebu3325_1, "EBU Tech 3325: Test pattern 1" },
-	{ "ebu3325-2", generate_ebu3325_2, "EBU Tech 3325: Test pattern 2" },
-	{ "ebu3325-5", generate_ebu3325_5, "EBU Tech 3325: Test patterns 5-1...5-15" },
-	{ "ebu3325-5r", generate_ebu3325_5_red, "EBU Tech 3325: Test pattern 5-red" },
-	{ "ebu3325-5g", generate_ebu3325_5_green, "EBU Tech 3325: Test pattern 5-green" },
-	{ "ebu3325-5b", generate_ebu3325_5_blue, "EBU Tech 3325: Test pattern 5-blue" },
-	{ "blacklevel", generate_blacklevel, "Black/sub-black checkerboard" },
-	{ "whitelevel", generate_whitelevel, "White/super-white checkerboard" },
-	{ NULL, NULL, NULL }
+	{ "ebu100", generate_ebu100, "EBU 100% colour bars", PF_YCBCR },
+	{ "ebu75", generate_ebu75, "EBU 75% colour bars", PF_YCBCR },
+	{ "ebu3325-1", generate_ebu3325_1, "EBU Tech 3325: Test pattern 1", PF_YCBCR },
+	{ "ebu3325-2", generate_ebu3325_2, "EBU Tech 3325: Test pattern 2", PF_YCBCR },
+	{ "ebu3325-5", generate_ebu3325_5, "EBU Tech 3325: Test patterns 5-1...5-15", PF_YCBCR },
+	{ "ebu3325-5r", generate_ebu3325_5_red, "EBU Tech 3325: Test pattern 5-red", PF_YCBCR },
+	{ "ebu3325-5g", generate_ebu3325_5_green, "EBU Tech 3325: Test pattern 5-green", PF_YCBCR },
+	{ "ebu3325-5b", generate_ebu3325_5_blue, "EBU Tech 3325: Test pattern 5-blue", PF_YCBCR },
+	{ "blacklevel", generate_blacklevel, "Black/sub-black checkerboard", PF_YCBCR },
+	{ "whitelevel", generate_whitelevel, "White/super-white checkerboard", PF_YCBCR },
+	{ NULL, NULL, NULL, 0 }
 };
 
 static void
@@ -121,7 +121,6 @@ main(int argc, char **argv)
 	size_t c;
 	unsigned long frame;
 	image *i;
-	FILE *f;
 	int e, ch, width, height;
 	char *t, *format, *pattern;
 
@@ -187,17 +186,17 @@ main(int argc, char **argv)
 		return 1;
 	}
 	colourmap_init();
-	i = image_create(PF_YCBCR, width, height);
-	if(!i)
-	{
-		fprintf(stderr, "%s: failed to allocate image\n", argv[0]);
-		exit(255);
-	}
-	image_clear(i, &black);
 	for(c = 0; generators[c].name; c++)
 	{
 		if(!strcmp(generators[c].name, pattern))
 		{
+			i = image_create(generators[c].pixelformat, width, height);
+			if(!i)
+			{
+				fprintf(stderr, "%s: failed to allocate image\n", argv[0]);
+				exit(255);
+			}
+			image_clear(i, &black);
 			if(generators[c].fn(i, (uint32_t) frame))
 			{
 				fprintf(stderr, "%s: %s: %s\n", progname, pattern, strerror(errno));
@@ -206,7 +205,11 @@ main(int argc, char **argv)
 			break;
 		}
 	}
-
+	if(!generators[c].name)
+	{
+		fprintf(stderr, "%s: internal error: pattern type '%s' not found\n", progname, pattern);
+		return 1;
+	}
 	e = 0;
 	for(; optind < argc; optind++)
 	{

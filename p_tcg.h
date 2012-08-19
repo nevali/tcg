@@ -103,6 +103,7 @@ struct generator_s
 	const char *name;
 	generator_fn fn;
 	const char *description;
+	int pixelformat;
 };
 
 extern colour sub_black, super_white;
