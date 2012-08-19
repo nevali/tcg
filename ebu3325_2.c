@@ -23,12 +23,10 @@
 /* EBU Tech 3325 - Test pattern 2: Black and super-white */
 
 int
-generate_ebu3325_2(image *i, uint32_t frame)
+generate_ebu3325_2(image *i)
 {
 	uint32_t ofx, ofy, size;	
 	
-	(void) frame;
-
 	/* Patches are squares 13.35% of the height */   
 	size = i->vpheight / 7.5;
 	/* The offset is 0.4 of the width or height relative to the centre */

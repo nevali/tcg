@@ -21,11 +21,9 @@
 #include "p_tcg.h"
 
 int
-generate_ebu100(image *i, uint32_t frame)
+generate_ebu100(image *i)
 {
 	colour *bars[8];
-	
-	(void) frame;
 
 	bars[0] = &white;
 	bars[1] = &yellow100;

@@ -60,8 +60,9 @@ usage(void)
 	printf("   -h                 Print this usage message\n");
 	printf("   -s [WIDTHx]HEIGHT  Specify frame size\n");
 	printf("   -t TYPE            Generate a TYPE pattern\n");
-	printf("   -f INDEX           Specify frame index (for multi-frame patterns)\n");
-	printf("   -T WIDE[xTALL]     Split the image into WIDE x TALL tiles (default for both is 1)\n");
+	printf("   -f START[-END]     Specify frame index or range (for multi-frame patterns)\n");
+	printf("   -T WIDE[xTALL]     Split the image into WIDE x TALL tiles\n");
+	printf("                      (default for both is 1)\n");
 	printf("\n");
 	printf("FORMAT is one of:\n\n");
 	printf("%-16s %-40s %6s %6s %6s\n", "NAME", "DESCRIPTION", "PLANES", "DEPTH", "PLANAR");
@@ -154,7 +155,34 @@ parsetiles(char *tiles, uint32_t *wide, uint32_t *tall)
 }
 
 static int
-generateframe(image *i, generator *g, uint32_t width, uint32_t height, uint32_t frame, uint32_t xtiles, uint32_t ytiles, uint32_t *xsize, uint32_t *ysize)
+parseframeseq(char *seq, unsigned long *firstframe, unsigned long *lastframe)
+{
+	char *t;
+	unsigned long l;
+
+	t = NULL;
+	l = strtoul(seq, &t, 10);
+	*firstframe = l;
+	*lastframe = l;
+	if(t && *t)
+	{
+		if(*t != '-')
+		{
+			fprintf(stderr, "%s: cannot parse frame sequence '%s'\n", progname, seq);
+			return -1;
+		}
+		t++;
+		if(*t)
+		{
+			l = strtoul(t, &t, 10);
+			*lastframe = l;
+		}
+	}
+	return 0;
+}
+
+static int
+generateframe(image *i, generator *g, uint32_t width, uint32_t height, uint32_t xtiles, uint32_t ytiles, uint32_t *xsize, uint32_t *ysize)
 {
 	uint32_t xspace, yspace, yc, xc, x, y;
 
@@ -182,7 +210,7 @@ generateframe(image *i, generator *g, uint32_t width, uint32_t height, uint32_t 
 				xspace = width - x;
 			}
 			image_viewport(i, x, y, xspace, yspace);
-			if(g->fn(i, frame))
+			if(g->fn(i))
 			{
 				return -1;
 			}
@@ -193,45 +221,90 @@ generateframe(image *i, generator *g, uint32_t width, uint32_t height, uint32_t 
 	return 0;
 }
 
-static int
-storeframe(image *i, int argc, char **argv)
+output *
+parseoutputs(int argc, char **argv)
 {
-	int e, d;
-	size_t c;
-	const char *format;
+	output *p;
+	int c, d;
 	char *t;
+	format *def;
 
-	e = 0;
-	for(d = 0; d < argc; d++)
+	p = (output *) calloc(argc + 1, sizeof(output));
+	if(!p)
 	{
-		t = strchr(argv[d], ':');
+		return NULL;
+	}
+	/* The default format is that matching DEFAULT_FORMAT, or the first in
+	 * the list if all else fails.
+	 */
+	def = NULL;
+	for(d = 0; formats[d].name; d++)
+	{
+		if(!d)
+		{
+			def = &(formats[d]);
+		}
+		if(!strcmp(formats[d].name, DEFAULT_FORMAT))
+		{
+			def = &(formats[d]);
+			break;
+		}   
+	}
+	/* For each argument, the pattern is [FORMAT:]PATH
+	 * If FORMAT is not specified, the default format is used. If FORMAT is
+	 * specified, but is not supported, the 'format' member of the output
+	 * structure is set to NULL and no output will be written.
+	 */
+	for(c = 0; c < argc; c++)
+	{
+		t = strchr(argv[c], ':');
 		if(t)
 		{
-			format = argv[d];
 			*t = 0;
 			t++;
+			p[c].pattern = t;
+			for(d = 0; formats[d].name; d++)
+			{
+				if(!strcmp(formats[d].name, argv[c]))
+				{
+					p[c].format = &(formats[d]);
+					break;
+				}
+			}
+			if(!formats[d].name)
+			{
+				fprintf(stderr, "%s: unsupported format '%s'\n", progname, argv[c]);
+			}
 		}
 		else
 		{
-			format = DEFAULT_FORMAT;
-			t = argv[d];
+			p[c].pattern = argv[c];
+			p[c].format = def;
 		}
-		for(c = 0; formats[c].name; c++)
+		
+	}
+	return p;
+}
+
+static int
+storeframe(image *i, output *outputs)
+{
+	int e;
+	size_t c;
+	char *t;
+
+	e = 0;
+	for(c = 0; outputs[c].pattern; c++)
+	{
+		if(!outputs[c].format)
 		{
-			if(!strcmp(formats[c].name, format))
-			{
-				if(formats[c].fn(i, t))
-				{
-					fprintf(stderr, "%s: %s: %s\n", progname, t, strerror(errno));
-					e |= 1;
-				}
-				break;
-			}
-		}
-		if(!formats[c].name)
-		{
-			fprintf(stderr, "%s: unsupported format '%s'\n", progname, format);
 			e |= 2;
+			continue;
+		}
+		if(outputs[c].format->fn(i, &(outputs[c])))
+		{
+			fprintf(stderr, "%s: %s: %s\n", progname, t, strerror(errno));
+			e |= 1;
 		}
 	}
 	return e;
@@ -244,8 +317,9 @@ main(int argc, char **argv)
 	unsigned long firstframe, lastframe, frame;
 	image *i;
 	int e, ch, width, height, r;
-	char *t, *pattern;
+	char *pattern;
 	uint32_t xtiles, ytiles, xsize, ysize;
+	output *outputs;
 
 	progname = argv[0];
 	width = 1920;
@@ -256,6 +330,7 @@ main(int argc, char **argv)
 	ysize = 0;
 	firstframe = 0;
 	lastframe = 0;
+	e = 0;
 	pattern = NULL;
 	while((ch = getopt(argc, argv, "hs:t:f:T:")) != -1)
 	{
@@ -277,12 +352,8 @@ main(int argc, char **argv)
 			}
 			break;
 		case 'f':
-			t = NULL;
-			firstframe = strtoul(optarg, &t, 10);
-			lastframe = firstframe;
-			if(t && *t)
+			if(parseframeseq(optarg, &firstframe, &lastframe))
 			{
-				fprintf(stderr, "%s: invalid frame number '%s'\n", progname, optarg);
 				return 1;
 			}
 			break;
@@ -321,7 +392,13 @@ main(int argc, char **argv)
 		usage();
 		return 1;
 	}
-	colourmap_init();
+	outputs = parseoutputs(argc - optind, &(argv[optind]));
+	if(!outputs)
+	{
+		fprintf(stderr, "%s: %s\n", progname, strerror(errno));
+		return 1;
+	}
+	/* Attempt to locate the pattern generator */
 	for(c = 0; generators[c].name; c++)
 	{
 		if(!strcmp(generators[c].name, pattern))
@@ -334,27 +411,39 @@ main(int argc, char **argv)
 		fprintf(stderr, "%s: internal error: pattern type '%s' not found\n", progname, pattern);
 		return 1;
 	}
+	colourmap_init();
 	i = image_create(generators[c].pixelformat, width, height);
 	if(!i)
 	{
 		fprintf(stderr, "%s: failed to allocate image\n", argv[0]);
 		return 1;
 	}
-	e = 0;
+	/* Generate each of the frames */
 	for(frame = firstframe; frame <= lastframe; frame++)
 	{
-		if(generateframe(i, &(generators[c]), width, height, frame, xtiles, ytiles, &xsize, &ysize))
+		i->frame = frame;
+		if(generateframe(i, &(generators[c]), width, height, xtiles, ytiles, &xsize, &ysize))
 		{
 			fprintf(stderr, "%s: %s: %s\n", progname, pattern, strerror(errno));
 			return 1;
 		}
-		r = storeframe(i, argc - optind, &(argv[optind]));
+		r = storeframe(i, outputs);
 		if(r < 0)
 		{
 			return 1;
 		}
 		e |= r;
 	}
+	/* Clean up */
+	for(c = 0; outputs[c].pattern; c++)
+	{
+		if(outputs[c].format)
+		{
+			/* Close any file handles */
+			outputs[c].format->fn(NULL, &(outputs[c]));
+		}
+	}
+	free(outputs);	  
 	if((e & 2))
 	{
 		fprintf(stderr, "See '%s -h' for a list of supported formats\n", progname);

@@ -23,13 +23,33 @@
 #ifdef WITH_LIBTIFF
 
 int
-export_tiff_y16(image *i, const char *pathname)
+export_tiff_y16(image *i, output *output)
 {
 	int d;
 	size_t n, y;
 	TIFF *tif;
-	
-	tif = TIFFOpen(pathname, "w");
+
+	if(!i)
+	{
+		if(output->d.tiff)
+		{
+			TIFFClose(output->d.tiff);
+		}
+		return 0;
+	}
+	if(output->ispattern)
+	{
+		
+	}
+	else
+	{
+		if(!output->d.tiff)
+		{
+			output->d.tiff = TIFFOpen(output->pattern, "w");
+		}
+		tif = output->d.tiff;
+	}
+
 	TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, i->width);
 	TIFFSetField(tif, TIFFTAG_IMAGELENGTH, i->height);
 	TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
@@ -44,14 +64,17 @@ export_tiff_y16(image *i, const char *pathname)
 	{
 		if(TIFFWriteScanline(tif, (tdata_t) &(i->pixels[0][n]), y, (tsample_t) d) == -1)
 		{
-			TIFFError(pathname, "Failed to write scanline %lu\n", (unsigned long) y);
+			TIFFError(output->pattern, "Failed to write scanline %lu\n", (unsigned long) y);
 			TIFFClose(tif);
 			return -1;
 		}
 		n += i->width;
 	}
-
-	TIFFClose(tif);
+	TIFFWriteDirectory(tif);
+	if(output->ispattern)
+	{
+		TIFFClose(tif);
+	}
 	return 0;
 }
 

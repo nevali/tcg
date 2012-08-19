@@ -14,7 +14,9 @@ To-do/Outstanding issues:
 
 * JPEG2000 should be added as an interchange format.
 
-* It should be possible to write multiple frames from a single invocation.
+* Multiple frames cannot be written with ffmpeg-style pattern filenames
+  (currently for raw output they are appended to the file; TIFFs are written
+  as multiple pages).
 
 
 Using tcg
@@ -22,16 +24,23 @@ Using tcg
 
 Run 'tcg -h' for usage information. There are command-line options to:
 
-* Specify the type of test pattern to generate
+* Specify the type of test pattern to generate.
 
 * The frame size (if you specify one dimension only, it is assumed to be a
-  height, and the width will be calculated as (h * 16) / 9
+  height, and the width will be calculated as (h * 16) / 9.
 
-* The frame index (counted from zero) for multi-frame patterns
+* The frame index or range (counted from zero) for multi-frame patterns.
+
+* Split the frame into identical tiles.
 
 You can write multiple output files in different formats for the same frame.
 Prefix the filename with the format name (e.g., 'tiff-y16:myframe.tiff').
 
+For example, to write a single frame in 16-bit TIFF format containing only
+the luma (Y) channel, consisting of a UHDTV 8K image made up for a 4x4 grid
+of the "EBU 75%" test pattern, you would invoke:
+
+$ tcg -s 7680x4320 -T 4x4 -t ebu75 tiff-y16:frame.tiff
 
 Building from a git checkout
 ============================

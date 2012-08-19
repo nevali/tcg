@@ -23,12 +23,10 @@
 /* White and super-white 4x4 checkerboard on a white field */
 
 int
-generate_whitelevel(image *i, uint32_t frame)
+generate_whitelevel(image *i)
 {
 	uint32_t size, midx, midy, y, x, n;
 	
-	(void) frame;
-
 	/* Patches are squares 13.35% of the height */   
 	size = i->vpheight / 7.5;
 	/* Find the centre */

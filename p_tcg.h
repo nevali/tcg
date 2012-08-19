@@ -41,8 +41,9 @@ typedef struct colour_s colour;
 typedef struct image_s image;
 typedef struct format_s format;
 typedef struct generator_s generator;
-typedef int (*image_export_fn)(image *img, const char *fn);
-typedef int (*generator_fn)(image *img, uint32_t frame);
+typedef struct output_s output;
+typedef int (*image_export_fn)(image *img, output *out);
+typedef int (*generator_fn)(image *img);
 
 struct ycbcr_s
 {
@@ -76,6 +77,7 @@ struct pixelref_s
 
 struct image_s
 {
+	unsigned long frame;
 	int format;
 	int planes;
 	uint32_t width;
@@ -106,6 +108,22 @@ struct generator_s
 	int pixelformat;
 };
 
+struct output_s
+{
+	format *format;
+	const char *pattern;
+	int ispattern;
+	/* Format-specific data */
+	union
+	{
+		void *ptr;
+		FILE *f;
+#ifdef WITH_LIBTIFF
+		TIFF *tiff;
+#endif
+	} d;
+};
+
 extern colour sub_black, super_white;
 extern colour black, white, grey50, grey20;
 extern colour red100, green100, blue100, cyan100, magenta100, yellow100;
@@ -132,25 +150,25 @@ int image_viewport(image *i, uint32_t x, uint32_t y, uint32_t width, uint32_t he
 int image_viewport_reset(image *i);
 
 
-int export_ycc444_16_planar(image *i, const char *pathname);
-int export_ycc444_8_planar(image *i, const char *pathname);
+int export_ycc444_16_planar(image *i, output *out);
+int export_ycc444_8_planar(image *i, output *out);
 # ifdef WITH_LIBTIFF
-int export_tiff_ycc444_16(image *i, const char *pathname);
-int export_tiff_ycc444_8(image *i, const char *pathname);
-int export_tiff_y16(image *i, const char *pathname);
+int export_tiff_ycc444_16(image *i, output *out);
+int export_tiff_ycc444_8(image *i, output *out);
+int export_tiff_y16(image *i, output *out);
 # endif
 
-int generate_ebu100(image *i, uint32_t frame);
-int generate_ebu75(image *i, uint32_t frame);
-int generate_ebu3325_1(image *i, uint32_t frame);
-int generate_ebu3325_2(image *i, uint32_t frame);
+int generate_ebu100(image *i);
+int generate_ebu75(image *i);
+int generate_ebu3325_1(image *i);
+int generate_ebu3325_2(image *i);
 
-int generate_ebu3325_5(image *i, uint32_t frame);
-int generate_ebu3325_5_red(image *i, uint32_t frame);
-int generate_ebu3325_5_green(image *i, uint32_t frame);
-int generate_ebu3325_5_blue(image *i, uint32_t frame);
+int generate_ebu3325_5(image *i);
+int generate_ebu3325_5_red(image *i);
+int generate_ebu3325_5_green(image *i);
+int generate_ebu3325_5_blue(image *i);
 
-int generate_blacklevel(image *i, uint32_t frame);
-int generate_whitelevel(image *i, uint32_t frame);
+int generate_blacklevel(image *i);
+int generate_whitelevel(image *i);
 
 #endif /*!P_TCG_H_*/

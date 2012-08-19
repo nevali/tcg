@@ -21,12 +21,10 @@
 #include "p_tcg.h"
 
 int
-generate_ebu75(image *i, uint32_t frame)
+generate_ebu75(image *i)
 {
 	uint32_t h;	
 	colour *bars[7];
-	
-	(void) frame;
 
 	h = i->vpheight / 10;
 	

@@ -23,12 +23,10 @@
 /* EBU Tech 3325 - Test pattern 5: Single-colour patches on a black field */
 
 int
-generate_ebu3325_5_red(image *i, uint32_t frame)
+generate_ebu3325_5_red(image *i)
 {
 	uint32_t size;
 	
-	(void) frame;
-
 	/* Patches are squares 13.35% of the height */   
 	size = i->vpheight / 7.5;
 	/* Fill with black */
@@ -45,12 +43,10 @@ generate_ebu3325_5_red(image *i, uint32_t frame)
 }
 
 int
-generate_ebu3325_5_green(image *i, uint32_t frame)
+generate_ebu3325_5_green(image *i)
 {
 	uint32_t size;
 	
-	(void) frame;
-
 	/* Patches are squares 13.35% of the height */   
 	size = i->vpheight / 7.5;
 	/* Fill with black */
@@ -67,12 +63,10 @@ generate_ebu3325_5_green(image *i, uint32_t frame)
 }
 
 int
-generate_ebu3325_5_blue(image *i, uint32_t frame)
+generate_ebu3325_5_blue(image *i)
 {
 	uint32_t size;
 	
-	(void) frame;
-
 	/* Patches are squares 13.35% of the height */   
 	size = i->vpheight / 7.5;
 	/* Fill with black */
@@ -89,13 +83,13 @@ generate_ebu3325_5_blue(image *i, uint32_t frame)
 }
 
 int
-generate_ebu3325_5(image *i, uint32_t frame)
+generate_ebu3325_5(image *i)
 {
-	uint32_t size;
+	uint32_t size, frame;
 	colour *col;
 
 	/* Determine the colour from the frame index */
-	frame %= 15;
+	frame = i->frame % 15;
 	col = ebu_shades[frame];
 	/* Patches are squares 13.35% of the height */   
 	size = i->vpheight / 7.5;

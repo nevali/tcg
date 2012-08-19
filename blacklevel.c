@@ -23,12 +23,10 @@
 /* Black and sub-black 4x4 checkerboard on a black field */
 
 int
-generate_blacklevel(image *i, uint32_t frame)
+generate_blacklevel(image *i)
 {
 	uint32_t size, midx, midy, y, x, n;
 	
-	(void) frame;
-
 	/* Patches are squares 13.35% of the height */   
 	size = i->vpheight / 7.5;
 	/* Find the centre */

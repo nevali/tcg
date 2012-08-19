@@ -21,20 +21,40 @@
 #include "p_tcg.h"
 
 int
-export_ycc444_16_planar(image *i, const char *pathname)
+export_ycc444_16_planar(image *i, output *output)
 {
 	char *row;
 	int d;
 	size_t n, c, y, x, nbytes;
 	FILE *f;
 
+	if(!i)
+	{
+		/* Clean up */
+		if(output->d.f)
+		{
+			fclose(output->d.f);
+		}
+		return 0;
+	}
 	nbytes = i->width * sizeof(pixel);
 	row = malloc(nbytes);
 	if(!row)
 	{
 		return -1;
 	}
-	f = fopen(pathname, "w");
+	if(output->ispattern)
+	{
+		
+	}
+	else
+	{
+		if(!output->d.f)
+		{
+			output->d.f = fopen(output->pattern, "w");
+		}
+		f = output->d.f;
+	}
 	if(!f)
 	{
 		free(row);
@@ -58,6 +78,9 @@ export_ycc444_16_planar(image *i, const char *pathname)
 		}
 	}
 	free(row);
-	fclose(f);
+	if(output->ispattern)
+	{
+		fclose(f);
+	}
 	return 0;
 }

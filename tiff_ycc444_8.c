@@ -23,21 +23,39 @@
 #ifdef WITH_LIBTIFF
 
 int
-export_tiff_ycc444_8(image *i, const char *pathname)
+export_tiff_ycc444_8(image *i, output *output)
 {
 	int d;
 	uint8_t *row;
 	size_t n, y, c, x, nbytes;
 	TIFF *tif;
 
+	if(!i)
+	{
+		if(output->d.tiff)
+		{
+			TIFFClose(output->d.tiff);
+		}
+		return 0;
+	}
 	nbytes = i->width;
 	row = malloc(nbytes);
 	if(!row)
 	{
 		return -1;
 	}
-	
-	tif = TIFFOpen(pathname, "w");
+	if(output->ispattern)
+	{
+		
+	}
+	else
+	{
+		if(!output->d.tiff)
+		{
+			output->d.tiff = TIFFOpen(output->pattern, "w");
+		}
+		tif = output->d.tiff;
+	}
 	TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, i->width);
 	TIFFSetField(tif, TIFFTAG_IMAGELENGTH, i->height);
 	TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_SEPARATE);
@@ -66,14 +84,17 @@ export_tiff_ycc444_8(image *i, const char *pathname)
 			}
 			if(TIFFWriteScanline(tif, (tdata_t) row, y, (tsample_t) d) == -1)
 			{
-				TIFFError(pathname, "Failed to write scanline %lu/%d\n", (unsigned long) y, d);
+				TIFFError(output->pattern, "Failed to write scanline %lu/%d\n", (unsigned long) y, d);
 				TIFFClose(tif);
 				return -1;
 			}
 		}
 	}
-
-	TIFFClose(tif);
+	TIFFWriteDirectory(tif);
+	if(output->ispattern)
+	{
+		TIFFClose(tif);
+	}
 	return 0;
 }
 
