@@ -223,6 +223,9 @@ main(int argc, char **argv)
 	uint32_t xtiles, ytiles, xsize, ysize;
 	output *outputs;
 
+#ifdef WITH_LIBJASPER
+	jas_init();
+#endif
 	progname = argv[0];
 	width = 1920;
 	height = 1080;

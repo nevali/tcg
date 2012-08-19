@@ -26,7 +26,15 @@
 # include <math.h>
 # include <ctype.h>
 
-# include "tiffio.h"
+# ifdef WITH_LIBTIFF
+#  include "tiffio.h"
+# endif
+
+# ifdef WITH_LIBJASPER
+/* Work around developers not knowing how autoconf works */
+#  define JAS_CONFIG_H
+#  include "jasper/jasper.h"
+# endif
 
 # define PACKED                         __attribute__((packed))
 
@@ -66,7 +74,7 @@ struct rgb_s
 struct colour_s
 {
 	int format;	
-	union pixel_u
+	union
 	{
 		pixel values[MAX_PLANES];
 		struct ycbcr_s ycbcr;
@@ -126,11 +134,16 @@ struct output_s
 #ifdef WITH_LIBTIFF
 		TIFF *tiff;
 #endif
+#ifdef WITH_LIBJASPER
+		jas_stream_t *jp2;
+#endif
 	} d;
 };
 
+/* The program name as used at the point of invocation */
 extern const char *progname;
 
+/* Global colour palette */
 extern colour sub_black, super_white;
 extern colour black, white, grey50, grey20;
 extern colour red100, green100, blue100, cyan100, magenta100, yellow100;
@@ -146,16 +159,19 @@ extern colour *ebu_greys[], *ebu_shades[];
 
 int colourmap_init(void);
 
+/* Imaging core */
 image *image_create(int format, uint32_t width, uint32_t height);
 int image_pixel(image *i, uint32_t x, uint32_t y, pixelref *ref);
-
 int image_clear(image *i, colour *col);
-int image_draw_hline(image *i, uint32_t x, uint32_t y, uint32_t w, colour *c);
-int image_draw_fillrect(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, colour *c);
-int image_draw_bars(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, colour **bars, size_t nbars);
 int image_viewport(image *i, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 int image_viewport_reset(image *i);
 
+/* Drawing */
+int image_draw_hline(image *i, uint32_t x, uint32_t y, uint32_t w, colour *c);
+int image_draw_fillrect(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, colour *c);
+int image_draw_bars(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, colour **bars, size_t nbars);
+
+/* Output handling */
 output *output_parse(int argc, char **argv);
 format *output_formats(void);
 int output_destroy(output *outputs);
@@ -163,6 +179,7 @@ int output_store(image *i, output *outputs);
 const char *output_filename(output *o, image *i, int *shouldclose);
 FILE *output_file(output *o, image *i, int *shouldclose);
 
+/* Export formats */
 int export_ycc444_16_planar(image *i, output *out);
 int export_ycc444_8_planar(image *i, output *out);
 # ifdef WITH_LIBTIFF
@@ -170,7 +187,11 @@ int export_tiff_ycc444_16(image *i, output *out);
 int export_tiff_ycc444_8(image *i, output *out);
 int export_tiff_y16(image *i, output *out);
 # endif
+# ifdef WITH_LIBJASPER
+int export_jp2(image *i, output *out);
+# endif
 
+/* Pattern generators */
 int generate_ebu100(image *i);
 int generate_ebu75(image *i);
 int generate_ebu3325_1(image *i);

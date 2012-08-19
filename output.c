@@ -26,7 +26,10 @@ static format formats[] = {
 #ifdef WITH_LIBTIFF
 	{ "tiff-ycc444p16", export_tiff_ycc444_16, "4:4:4 YCbCr 16-bpc TIFF", 3, 16, 1 },
 	{ "tiff-ycc444p8", export_tiff_ycc444_8, "4:4:4 YCbCr 8-bpc TIFF", 3, 8, 1 },
-	{ "tiff-y16", export_tiff_y16, "Greyscale (luma) 16-bpc TIFF", 3, 8, 1 },
+	{ "tiff-y16", export_tiff_y16, "Greyscale (luma) 16-bpc TIFF", 3, 16, 1 },
+#endif
+#ifdef WITH_LIBJASPER
+	{ "jp2", export_jp2, "JPEG 2000 YCbCr (16-bpc)", 3, 16, 1 },
 #endif
 	{ NULL, NULL, NULL, 0, 0, 0 }
 };
