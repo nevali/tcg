@@ -33,9 +33,11 @@ if ! test x"$with_libtiff" = x"no" ; then
    if test x"$have_libtiff_header" = x"yes" ; then
    	  AC_CHECK_LIB([tiff],[TIFFOpen],[LIBTIFF_LIBS="-ltiff"],[
 		AC_MSG_ERROR([cannot find the libtiff library. You can specify an installation prefix to libtiff with --with-libtiff=PREFIX])])
+	  have_libtiff=yes
    fi
-
-   AC_DEFINE_UNQUOTED([WITH_LIBTIFF],[1],[Define if libtiff is available])
+   if test x"$have_libtiff" = x"yes" ; then
+      AC_DEFINE_UNQUOTED([WITH_LIBTIFF],[1],[Define if libtiff is available])
+   fi
 fi
 
 CPPFLAGS="$old_CPPFLAGS"

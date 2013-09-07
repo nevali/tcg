@@ -33,9 +33,11 @@ if ! test x"$with_libjpeg" = x"no" ; then
    if test x"$have_libjpeg_header" = x"yes" ; then
    	  AC_CHECK_LIB([jpeg],[jpeg_mem_init],[LIBJPEG_LIBS="-ljpeg"],[
 		AC_MSG_ERROR([cannot find the libjpeg library. You can specify an installation prefix to libjpeg with --with-libjpeg=PREFIX])])
+	  have_libjpeg=yes
    fi
-
-   AC_DEFINE_UNQUOTED([WITH_LIBJPEG],[1],[Define if libjpeg is available])
+   if test x"$have_libjpeg" = x"yes" ; then
+      AC_DEFINE_UNQUOTED([WITH_LIBJPEG],[1],[Define if libjpeg is available])
+   fi
 fi
 
 CPPFLAGS="$old_CPPFLAGS"

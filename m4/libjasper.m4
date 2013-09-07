@@ -33,9 +33,11 @@ if ! test x"$with_libjasper" = x"no" ; then
    if test x"$have_libjasper_header" = x"yes" ; then
    	  AC_CHECK_LIB([jasper],[jas_image_encode],[LIBJASPER_LIBS="-ljasper"],[
 		AC_MSG_ERROR([cannot find the libjasper library. You can specify an installation prefix to libjasper with --with-libjasper=PREFIX])])
+      have_libjasper=yes
    fi
-
-   AC_DEFINE_UNQUOTED([WITH_LIBJASPER],[1],[Define if libjasper is available])
+   if test x"$have_libjasper" = x"yes" ; then
+	   AC_DEFINE_UNQUOTED([WITH_LIBJASPER],[1],[Define if libjasper is available])
+   fi
 fi
 
 CPPFLAGS="$old_CPPFLAGS"
