@@ -90,6 +90,4 @@ $ ./configure
       [--with-libjpeg=/prefix/of/libjpeg]
       [--with-libjasper=/prefix/of/libjasper]
 $ make
-
-See the source of buildtools/autogen for environment variables you can set if
-it doesn't find your copies of aclocal, automake, autoconf, and so forth.
+$ sudo make install
