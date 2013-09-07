@@ -117,6 +117,30 @@ convert_pixel_8(const pixelref src, colour *dest)
 	return 0;
 }
 
+#define CLIP16(v) \
+	v = (v < 0 ? 0 : ((v > UINT16_MAX) ? UINT16_MAX : v))
+#define CLIP_RGB16(r, g, b) \
+	CLIP16(r); \
+	CLIP16(g); \
+	CLIP16(b);
+
+#define CONVERT_YCBCR_RGB(y, cb, cr, r, g, b, k1, k2, k3, k4, mid) \
+	r = (y) + ( (k1) * ( (cr) - (mid) ) ); \
+	g = (y) - ( (k2) * ( (cb) - (mid) ) ) - ( (k3) * ( (cr) - (mid) ) ); \
+	b = (y) + ( (k4) * ( (cb1) - (mid) ) );
+
+#define ASSIGN_RGB16(colour, red, green, blue) \
+	(colour).format = PF_RGB; \
+	(colour).p.rgb.r = (red); \
+	(colour).p.rgb.g = (green); \
+	(colour).p.rgb.b = (blue);
+
+#define ASSIGN_RGB8(colour, red, green, blue) \
+	(colour).format = PF_RGB; \
+	(colour).p.rgb.r = (pixel)(red) >> 8; \
+	(colour).p.rgb.g = (pixel)(green) >> 8; \
+	(colour).p.rgb.b = (pixel)(blue) >> 8;
+
 /* Convert 16-bit YCbCr pixel values to 16-bit RGB colours using the JPEG values */
 static int
 convert_pixel_ycbcr_rgb16_jfif(const pixelref src, colour *dest)
@@ -127,38 +151,9 @@ convert_pixel_ycbcr_rgb16_jfif(const pixelref src, colour *dest)
 	cb1 = *(src.pixel[1]);
 	cr1 = *(src.pixel[2]);
 
-	r1 = y1 + (YCBCR_RGB_JFIF_K1 * (cr1 - ABSMID_YCBCR16));
-	g1 = y1 - (YCBCR_RGB_JFIF_K2 * (cb1 - ABSMID_YCBCR16)) - (YCBCR_RGB_JFIF_K3 * (cr1 - ABSMID_YCBCR16));
-	b1 = y1 + (YCBCR_RGB_JFIF_K4 * (cb1 - ABSMID_YCBCR16));
-	
-	if(r1 < 0)
-	{
-		r1 = 0;
-	}
-	if(r1 > UINT16_MAX)
-	{
-		r1 = UINT16_MAX;
-	}
-	if(g1 < 0)
-	{
-		g1 = 0;
-	}
-	if(g1 > UINT16_MAX)
-	{
-		g1 = UINT16_MAX;
-	}
-	if(b1 < 0)
-	{
-		b1 = 0;
-	}
-	if(b1 > UINT16_MAX)
-	{
-		b1 = UINT16_MAX;
-	}
-	dest->format = PF_RGB;
-	dest->p.rgb.r = r1;
-	dest->p.rgb.g = g1;
-	dest->p.rgb.b = b1;
+	CONVERT_YCBCR_RGB(y1, cb1, cr1, r1, g1, b1, YCBCR_RGB_JFIF_K1, YCBCR_RGB_JFIF_K2, YCBCR_RGB_JFIF_K3, YCBCR_RGB_JFIF_K4, ABSMID_YCBCR16);	
+	CLIP_RGB16(r1, g1, b1);
+	ASSIGN_RGB16(*dest, r1, g1, b1);
 	return 0;
 }
 
@@ -172,38 +167,9 @@ convert_pixel_ycbcr_rgb8_jfif(const pixelref src, colour *dest)
 	cb1 = *(src.pixel[1]);
 	cr1 = *(src.pixel[2]);
 
-	r1 = y1 + (YCBCR_RGB_JFIF_K1 * (cr1 - ABSMID_YCBCR16));
-	g1 = y1 - (YCBCR_RGB_JFIF_K2 * (cb1 - ABSMID_YCBCR16)) - (YCBCR_RGB_JFIF_K3 * (cr1 - ABSMID_YCBCR16));
-	b1 = y1 + (YCBCR_RGB_JFIF_K4 * (cb1 - ABSMID_YCBCR16));
-	
-	if(r1 < 0)
-	{
-		r1 = 0;
-	}
-	if(r1 > UINT16_MAX)
-	{
-		r1 = UINT16_MAX;
-	}
-	if(g1 < 0)
-	{
-		g1 = 0;
-	}
-	if(g1 > UINT16_MAX)
-	{
-		g1 = UINT16_MAX;
-	}
-	if(b1 < 0)
-	{
-		b1 = 0;
-	}
-	if(b1 > UINT16_MAX)
-	{
-		b1 = UINT16_MAX;
-	}
-	dest->format = PF_RGB;
-	dest->p.rgb.r = (pixel) r1 >> 8;
-	dest->p.rgb.g = (pixel) g1 >> 8;
-	dest->p.rgb.b = (pixel) b1 >> 8;
+	CONVERT_YCBCR_RGB(y1, cb1, cr1, r1, g1, b1, YCBCR_RGB_JFIF_K1, YCBCR_RGB_JFIF_K2, YCBCR_RGB_JFIF_K3, YCBCR_RGB_JFIF_K4, ABSMID_YCBCR16);	
+	CLIP_RGB16(r1, g1, b1);
+	ASSIGN_RGB8(*dest, r1, g1, b1);
 	return 0;
 }
 
@@ -216,39 +182,10 @@ convert_pixel_ycbcr_rgb16_jfifnom(const pixelref src, colour *dest)
 	y1 = STRETCH_Y16(*(src.pixel[0]));
 	cb1 = STRETCH_CBCR16(*(src.pixel[1]));
 	cr1 = STRETCH_CBCR16(*(src.pixel[2]));
-
-	r1 = y1 + (YCBCR_RGB_JFIF_K1 * (cr1 - ABSMID_YCBCR16));
-	g1 = y1 - (YCBCR_RGB_JFIF_K2 * (cb1 - ABSMID_YCBCR16)) - (YCBCR_RGB_JFIF_K3 * (cr1 - ABSMID_YCBCR16));
-	b1 = y1 + (YCBCR_RGB_JFIF_K4 * (cb1 - ABSMID_YCBCR16));
 	
-	if(r1 < 0)
-	{
-		r1 = 0;
-	}
-	if(r1 > UINT16_MAX)
-	{
-		r1 = UINT16_MAX;
-	}
-	if(g1 < 0)
-	{
-		g1 = 0;
-	}
-	if(g1 > UINT16_MAX)
-	{
-		g1 = UINT16_MAX;
-	}
-	if(b1 < 0)
-	{
-		b1 = 0;
-	}
-	if(b1 > UINT16_MAX)
-	{
-		b1 = UINT16_MAX;
-	}
-	dest->format = PF_RGB;
-	dest->p.rgb.r = r1;
-	dest->p.rgb.g = g1;
-	dest->p.rgb.b = b1;
+	CONVERT_YCBCR_RGB(y1, cb1, cr1, r1, g1, b1, YCBCR_RGB_JFIF_K1, YCBCR_RGB_JFIF_K2, YCBCR_RGB_JFIF_K3, YCBCR_RGB_JFIF_K4, ABSMID_YCBCR16);	
+	CLIP_RGB16(r1, g1, b1);
+	ASSIGN_RGB16(*dest, r1, g1, b1);
 	return 0;
 }
 
@@ -262,37 +199,8 @@ convert_pixel_ycbcr_rgb8_jfifnom(const pixelref src, colour *dest)
 	cb1 = STRETCH_CBCR16(*(src.pixel[1]));
 	cr1 = STRETCH_CBCR16(*(src.pixel[2]));
 
-	r1 = y1 + (YCBCR_RGB_JFIF_K1 * (cr1 - ABSMID_YCBCR16));
-	g1 = y1 - (YCBCR_RGB_JFIF_K2 * (cb1 - ABSMID_YCBCR16)) - (YCBCR_RGB_JFIF_K3 * (cr1 - ABSMID_YCBCR16));
-	b1 = y1 + (YCBCR_RGB_JFIF_K4 * (cb1 - ABSMID_YCBCR16));
-	
-	if(r1 < 0)
-	{
-		r1 = 0;
-	}
-	if(r1 > UINT16_MAX)
-	{
-		r1 = UINT16_MAX;
-	}
-	if(g1 < 0)
-	{
-		g1 = 0;
-	}
-	if(g1 > UINT16_MAX)
-	{
-		g1 = UINT16_MAX;
-	}
-	if(b1 < 0)
-	{
-		b1 = 0;
-	}
-	if(b1 > UINT16_MAX)
-	{
-		b1 = UINT16_MAX;
-	}
-	dest->format = PF_RGB;
-	dest->p.rgb.r = (pixel) r1 >> 8;
-	dest->p.rgb.g = (pixel) g1 >> 8;
-	dest->p.rgb.b = (pixel) b1 >> 8;
+	CONVERT_YCBCR_RGB(y1, cb1, cr1, r1, g1, b1, YCBCR_RGB_JFIF_K1, YCBCR_RGB_JFIF_K2, YCBCR_RGB_JFIF_K3, YCBCR_RGB_JFIF_K4, ABSMID_YCBCR16);	
+	CLIP_RGB16(r1, g1, b1);
+	ASSIGN_RGB8(*dest, r1, g1, b1);
 	return 0;
 }
