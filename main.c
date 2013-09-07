@@ -39,9 +39,11 @@ static generator generators[] = {
 static void
 usage(void)
 {
+	int def;
 	size_t c;
 	format *formats;
-
+	converter *converters;
+	
 	printf("Usage: %s [OPTIONS] [FORMAT:]OUTFILE [[FORMAT:]OUTFILE] ...\n\n", progname);
 	printf("OPTIONS is one or more of:\n");
 	printf("   -h                 Print this usage message\n");
@@ -52,27 +54,40 @@ usage(void)
 	printf("                      (default for both is 1)\n");
 	printf("\n");
 	printf("FORMAT is one of:\n\n");
-	printf("%-16s %-40s %6s %6s %6s\n", "NAME", "DESCRIPTION", "PLANES", "DEPTH", "PLANAR");
+	printf("  %-16s %-40s %6s %6s %6s\n", "NAME", "DESCRIPTION", "PLANES", "DEPTH", "PLANAR");
 	formats = output_formats();
 	if(formats)
 	{
 		for(c = 0; formats[c].name; c++)
 		{
-			printf("%-16s %-40s %6d %6d    %c\n", formats[c].name,
+			def = !strcmp(formats[c].name, DEFAULT_FORMAT);
+			printf("%c %-16s %-40s %6d %6d    %c\n", def ? '*' : ' ', formats[c].name,
 				   formats[c].description, formats[c].planes, formats[c].depth,
 			   formats[c].planar ? 'Y' : 'N');
 		}
 	}
 	printf("\n");
 	printf("TYPE is one of:\n\n");
-	printf("%-16s %-40s\n", "NAME", "DESCRIPTION");
+	printf("  %-16s %-40s\n", "NAME", "DESCRIPTION");
 	for(c = 0; generators[c].name; c++)
 	{
-		printf("%-16s %-40s\n", generators[c].name, generators[c].description);
+		def = !strcmp(generators[c].name, DEFAULT_GENERATOR);
+		printf("%c %-16s %-40s\n", def ? '*' : ' ', generators[c].name, generators[c].description);
 	}
 	printf("\n");
-	printf("The default format is '%s', and the default pattern type is '%s'.\n",
-		   DEFAULT_FORMAT, DEFAULT_GENERATOR);
+	converters = convert_list();
+	printf("CONVERTER is one of:\n\n");
+	printf("  %-16s %s\n", "NAME", "DESCRIPTION");
+	for(c = 0; converters[c].name; c++)
+	{
+		if(!converters[c].description || !converters[c].pixel_fn)
+		{
+			continue;
+		}
+		printf("%c %-16s %s\n", converters[c].def ? '*' : ' ', converters[c].name, converters[c].description);
+	}
+	printf("\n");
+	printf("Defaults are indicated with an asterisk (*) next to the name above.\n");
 }
 
 static int
@@ -237,7 +252,7 @@ main(int argc, char **argv)
 	lastframe = 0;
 	e = 0;
 	pattern = NULL;
-	while((ch = getopt(argc, argv, "hs:t:f:T:")) != -1)
+	while((ch = getopt(argc, argv, "hs:t:f:T:c:")) != -1)
 	{
 		switch(ch)
 		{
@@ -280,6 +295,14 @@ main(int argc, char **argv)
 			{
 				fprintf(stderr, "%s: unsupported pattern type '%s'\n", progname, optarg);
 				fprintf(stderr, "See '%s -h' for a list of supported pattern types\n", progname);
+				return 1;
+			}
+			break;
+		case 'c':
+			if(convert_set(optarg) < 0)
+			{
+				fprintf(stderr, "%s: unsupported colour converter '%s'\n", progname, optarg);
+				fprintf(stderr, "See '%s -h' for a list of supported colour converteres\n", progname);
 				return 1;
 			}
 			break;

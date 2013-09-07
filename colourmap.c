@@ -38,26 +38,7 @@ struct colourmap
 	uint16_t red, green, blue;
 };
 
-/* Values are FULL RANGE 16-bit YCbCr
- *
- * Nominal range for Y:
- *
- * 8-bit:            0x10 (16)   ...   0xEB (235)
- * 10-bit:          0x040 (64)   ...  0x3AC (940)
- * 16-bit:         0x1000 (4096) ... 0xEB00 (60160) 
- *
- * Nominal range for Cb & Cr:
- *
- * 8-bit:           0x10 (16)    ...   0xF0 (240)
- * 10-bit:         0x040 (64)    ...  0x3C0 (960)
- * 16-bit:        0x1000 (4096)  ... 0xF000 (61440)
- *
- * Achromatic points for Cb & Cr:
- *
- * 8-bit:           0x80 (128)
- * 10-bit:         0x200 (512)
- * 16-bit:        0x8000 (32768)
- */
+/* Values are FULL RANGE 16-bit YCbCr; see p_tcg.h for nominal ranges */
 
 static struct colourmap maptable[] =
 {

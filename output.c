@@ -31,6 +31,9 @@ static format formats[] = {
 #ifdef WITH_LIBJASPER
 	{ "jp2", export_jp2, "JPEG 2000 YCbCr (16-bpc)", 3, 16, 1 },
 #endif
+#ifdef WITH_LIBPNG
+	{ "png-rgb16", export_png_rgb_16, "RGB 16-bpc PNG", 3, 16, 0 },
+#endif
 	{ NULL, NULL, NULL, 0, 0, 0 }
 };
 

@@ -36,13 +36,61 @@
 #  include "jasper/jasper.h"
 # endif
 
+# ifdef WITH_LIBPNG
+#  include "png.h"
+# endif
+
 # define PACKED                         __attribute__((packed))
 
 # define MAX_PLANES                     4
 
+# define PF_UNKNOWN                     -1
 # define PF_RGB                         0
 # define PF_RGBA                        1
 # define PF_YCBCR                       2
+
+/* Nominal range for Y:
+ *
+ * 8-bit:            0x10 (16)   ...   0xEB (235)
+ * 10-bit:          0x040 (64)   ...  0x3AC (940)
+ * 16-bit:         0x1000 (4096) ... 0xEB00 (60160) 
+ *
+ * Nominal range for Cb & Cr:
+ *
+ * 8-bit:           0x10 (16)    ...   0xF0 (240)
+ * 10-bit:         0x040 (64)    ...  0x3C0 (960)
+ * 16-bit:        0x1000 (4096)  ... 0xF000 (61440)
+ *
+ * Achromatic points for Cb & Cr:
+ *
+ * 8-bit:           0x80 (128)
+ * 10-bit:         0x200 (512)
+ * 16-bit:        0x8000 (32768)
+ */
+
+# define SUB_Y16                       0x0000
+# define LOW_Y16                       0x1000
+# define MID_Y16                       0x6d80
+# define HIGH_Y16                      0xeb00
+# define SUPER_Y16                     0xffff
+# define RANGE_Y16                     (HIGH_Y16 - LOW_Y16)
+# define STRETCH_Y16(y)                (((double) y - LOW_Y16) / RANGE_Y16 * SUPER_Y16)
+
+# define SUB_CBCR16                    0x0000
+# define LOW_CBCR16                    0x1000
+# define MID_CBCR16                    0x7000
+# define HIGH_CBCR16                   0xf000
+# define SUPER_CBCR16                  0xffff
+# define RANGE_CBCR16                  (HIGH_CBCR16 - LOW_CBCR16)
+# define STRETCH_CBCR16(c)             (((double) c - LOW_CBCR16) / RANGE_CBCR16 * SUPER_CBCR16)
+
+# define ABSMID_YCBCR16                0x8000
+
+/* Colour conversion constants */
+# define YCBCR_RGB_JFIF_K1             1.402
+# define YCBCR_RGB_JFIF_K2             0.344
+# define YCBCR_RGB_JFIF_K3             0.714
+# define YCBCR_RGB_JFIF_K4             1.772
 
 # define DEFAULT_FORMAT                 "ycc444p16be"
 # define DEFAULT_GENERATOR              "ebu100"
@@ -54,8 +102,10 @@ typedef struct image_s image;
 typedef struct format_s format;
 typedef struct generator_s generator;
 typedef struct output_s output;
+typedef struct converter_s converter;
 typedef int (*image_export_fn)(image *img, output *out);
 typedef int (*generator_fn)(image *img);
+typedef int (*pixel_converter_fn)(const pixelref src, colour *dest);
 
 struct ycbcr_s
 {
@@ -120,6 +170,16 @@ struct generator_s
 	int pixelformat;
 };
 
+struct converter_s
+{
+	const char *name;
+	const char *description;
+	int def;
+	pixel_converter_fn pixel_fn;
+	int format;
+	int depth;
+};
+
 struct output_s
 {
 	format *format;
@@ -179,6 +239,11 @@ int output_store(image *i, output *outputs);
 const char *output_filename(output *o, image *i, int *shouldclose);
 FILE *output_file(output *o, image *i, int *shouldclose);
 
+/* Colour conversion */
+pixel_converter_fn convert_pixels(int informat, int outformat, int outdepth);
+converter *convert_list(void);
+int convert_set(const char *name);
+
 /* Export formats */
 int export_ycc444_16_planar(image *i, output *out);
 int export_ycc444_8_planar(image *i, output *out);
@@ -189,6 +254,9 @@ int export_tiff_y16(image *i, output *out);
 # endif
 # ifdef WITH_LIBJASPER
 int export_jp2(image *i, output *out);
+# endif
+# ifdef WITH_LIBPNG
+int export_png_rgb_16(image *i, output *output);
 # endif
 
 /* Pattern generators */
