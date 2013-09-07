@@ -84,8 +84,7 @@ You need libjpeg and libjasper installed if you want JPEG2000 output.
 Depending upon how libjasper has been built and installed, you may need to
 explicitly provide the prefix to libjpeg.
 
-$ git submodule update --init --recursive
-$ ./buildtools/autogen
+$ autoreconf -i
 $ ./configure
       [--with-libtiff=/prefix/of/libtiff]
       [--with-libjpeg=/prefix/of/libjpeg]
