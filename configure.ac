@@ -1,8 +1,5 @@
 AC_INIT([tcg],[master],,,[http://github.com/nevali/tcg])
 
-BUILDTOOLS_INIT
-BUILDTOOLS_DETECT_VERSION
-
 AM_INIT_AUTOMAKE(foreign)
 AM_MAINTAINER_MODE
 
