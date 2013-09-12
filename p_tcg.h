@@ -230,6 +230,7 @@ int image_viewport_reset(image *i);
 int image_draw_hline(image *i, uint32_t x, uint32_t y, uint32_t w, colour *c);
 int image_draw_fillrect(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, colour *c);
 int image_draw_bars(image *i, uint32_t x, uint32_t y, uint32_t w, uint32_t h, colour **bars, size_t nbars);
+int image_draw_copyline(image *i, pixelref *src, uint32_t destx, uint32_t desty, uint32_t w);
 
 /* Output handling */
 output *output_parse(int argc, char **argv);
@@ -272,5 +273,7 @@ int generate_ebu3325_5_blue(image *i);
 
 int generate_blacklevel(image *i);
 int generate_whitelevel(image *i);
+
+int generate_phase(image *i);
 
 #endif /*!P_TCG_H_*/

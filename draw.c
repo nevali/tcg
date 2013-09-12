@@ -120,3 +120,29 @@ image_draw_bars(image *i, uint32_t x, uint32_t y, uint32_t width, uint32_t heigh
 	}
 	return 0;
 }
+
+/* Copy up to w pixels from src up to (destx,desty)-(destx+w-1,desty) */
+int
+image_draw_copyline(image *i, pixelref *src, uint32_t destx, uint32_t desty, uint32_t w)
+{
+	pixelref dest;
+	int c;
+	
+	if(destx > i->width || desty > i->height)
+	{
+		return 0;
+	}
+	if(w + destx > i->width)
+	{
+		w = i->width - destx;
+	}
+	if(image_pixel(i, destx, desty, &dest))
+	{
+		return -1;
+	}
+	for(c = 0; c < i->planes; c++)
+	{
+		memcpy(dest.pixel[c], src->pixel[c], sizeof(pixel) * w);
+	}
+	return 0;
+}
